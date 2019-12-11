@@ -1,14 +1,13 @@
-/// <reference path="./util/Validation.ts" />
-import createError = require('http-errors');
-import express = require('express');
-import path = require('path');
-import cookieParser = require('cookie-parser');
-import logger = require('morgan');
-import fs = require('fs');
-import cheerio = require("cheerio");
-import { request } from './util/request';
-import * as StringHelper from './util/StringHelper';
-import SongUrlSaver from './util/SongUrl';
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const fs = require('fs');
+const cheerio = require("cheerio");
+const request = require('./util/request');
+const StringHelper = require('./util/StringHelper');
+const SongUrlSaver = require('./util/SongUrl');
 
 const app = express();
 const UrlSaver = new SongUrlSaver();
@@ -33,8 +32,8 @@ fs.readdirSync(path.join(__dirname, 'routes')).reverse().forEach(file => {
       ...req.query,
       ...req.body,
     };
-    const RouterMap: Validation.RouterMap = require(`./routes/${filename}`);
-    Object.keys(RouterMap).forEach((path: string): void => {
+    const RouterMap = require(`./routes/${filename}`);
+    Object.keys(RouterMap).forEach((path) => {
       let rObj = RouterMap[path];
       if (typeof rObj === 'function') {
         rObj = {

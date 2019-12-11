@@ -1,53 +1,15 @@
-var axios = require("axios");
-var xml2js = require('xml2js').xml2js;
-var changeUrlQuery = require('./StringHelper').changeUrlQuery;
+const axios = require("axios");
+const xml2js = require('xml2js').xml2js;
+const { changeUrlQuery } = require('./StringHelper');
 
-interface Headers {
-  Cookie?: string,
-
-  [propName: string]: any,
-}
-
-interface AxiosParam {
-  url: string,
-  dataType?: string,
-  data?: object,
-  method?: string,
-  headers?: Headers,
-  xsrfCookieName?: string,
-  withCredentials?: boolean,
-
-  [propName: string]: any,
-}
-
-type AxiosOpts = {
-  dataType?: 'xml' | 'raw',
-}
-
-interface ResObj {
-  data: string,
-}
-
-interface requestConstructor {
-  req?: any,
-  res?: any,
-  next?: any,
-}
-
-export class request {
-  req: { cookies: {}, userCookie: {}, query: { ownCookie: false } };
-
-  res: { send: ({}) => {} };
-
-  next: null;
-
-  constructor({ req, res, next }: requestConstructor) {
+class request {
+  constructor({ req, res, next }) {
     this.req = req || this.req;
     this.res = res || this.res;
     this.next = next;
   }
 
-  async send(options: AxiosParam | string, opts: AxiosOpts = { }): Promise<any> {
+  async send(options, opts = {}) {
     try {
       if (typeof options === 'string') {
         options = { url: options };
@@ -62,14 +24,12 @@ export class request {
         delete options.data;
       }
 
-      // const cookieObj: object = (Number(query.ownCookie) ? cookies : userCookie) || {};
       options.headers = options.headers || {};
       options.headers.referer = options.headers.referer || 'http://music.migu.cn/v3';
       options.xsrfCookieName = 'XSRF-TOKEN';
       options.withCredentials = true;
-      // options.headers.Cookie = Object.keys(cookieObj).map((k: string): string => `${k}=${cookieObj[k]}`).join('; ');
 
-      const res: ResObj = await axios(options);
+      const res = await axios(options);
 
       if (dataType === 'xml') {
         return handleXml(res.data);
@@ -98,11 +58,11 @@ export class request {
   }
 }
 
-function handleXml(data: string): Promise<any> {
-  return new Promise((resolve, reject): void => {
-    const handleObj = (obj: object) => {
-      Object.keys(obj).forEach((k: string): void => {
-        const v: object | any[] = obj[k];
+function handleXml(data) {
+  return new Promise((resolve, reject) => {
+    const handleObj = (obj) => {
+      Object.keys(obj).forEach((k) => {
+        const v = obj[k];
         if ((typeof v).toLowerCase() === 'object' && v instanceof Array && v.length === 1) {
           obj[k] = v[0];
         }
@@ -112,9 +72,11 @@ function handleXml(data: string): Promise<any> {
       })
     };
 
-    xml2js(data, (err: object, result: object): void => {
+    xml2js(data, (err, result) => {
       handleObj(result);
       resolve(result);
     })
   })
 }
+
+module.exports = request;

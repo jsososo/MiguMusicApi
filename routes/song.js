@@ -8,7 +8,7 @@ module.exports = {
       })
     }
 
-    let saveInfo: Validation.SongUrlMap = UrlSaver.get(id);
+    let saveInfo = UrlSaver.get(id);
     // 如果都能对得上，那就开启强制请求
     if (type && url && UrlSaver.check(id, type, url)) {
       saveInfo = undefined;

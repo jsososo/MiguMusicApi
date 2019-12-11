@@ -1,34 +1,29 @@
-import jsonFile = require('jsonfile');
-import { request } from './request';
-import CrypotJs = require('crypto-js');
-import JsEncrypt = require('node-jsencrypt');
+const request = require('./request');
+const jsonFile = require('jsonfile');
+const CrypotJs = require('crypto-js');
+const JsEncrypt = require('node-jsencrypt');
 
-export default class SongUrlSaver {
+class SongUrlSaver {
   constructor() {
     jsonFile.readFile('data/songUrl.json')
       .then((res) => {
-        jsonFile.writeFile('data/songUrl.json', {});
         this.data = res;
       });
   }
 
-  private data: {
-    [propName: string]: Validation.SongUrlMap,
-  };
-
-  push(id: string, info: Validation.SongUrlMap): void {
+  push(id, info) {
     this.data[id] = info;
   }
 
-  get(id: string): Validation.SongUrlMap {
+  get(id) {
     return this.data[id];
   }
 
-  check(id: string, type: Validation.SongSize, url: string): boolean {
+  check(id, type, url) {
     return Boolean(this.data[id] && this.data[id][type] === url);
   }
 
-  async query(id: string, cid: string): Promise<object> {
+  async query(id, cid) {
     try {
       const req = new request({});
       // 一套神秘的加密环节！
@@ -61,7 +56,7 @@ ZosTByYp4Xwpb1+WAQIDAQAB
         return {};
       }
 
-      const obj: Validation.SongUrlMap = {};
+      const obj = {};
       const sizeMap = {
         bqPlayInfo: '128k',
         hqPlayInfo: '320k',
@@ -92,3 +87,5 @@ ZosTByYp4Xwpb1+WAQIDAQAB
     jsonFile.writeFile('data/songUrl.json', this.data);
   }
 }
+
+module.exports = SongUrlSaver;

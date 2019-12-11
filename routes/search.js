@@ -9,7 +9,7 @@ module.exports = {
       })
     }
 
-    const result: any = await request.send({
+    const result = await request.send({
       url: 'http://music.migu.cn/v3/search',
       data: query,
     }, {
@@ -18,19 +18,13 @@ module.exports = {
 
     const $ = cheerio.load(result);
 
-    const searchResult:
-      (Validation.SongInfo |
-        Validation.ArtistInfo |
-        Validation.AlbumInfo |
-        Validation.MvInfo |
-        Validation.PlaylistInfo)[]
-        = [];
+    const searchResult = [];
 
     switch (query.type) {
       case 'song':
         $('.songlist-item.single-item').each((i, o) => {
           const $item = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
+          const artists = [];
           $item.find('.song-singer a').each((i, v) => {
             const $name = cheerio(v);
             artists.push({
@@ -41,7 +35,7 @@ module.exports = {
           const $album = $item.find('.song-album a');
           const id = $item.attr('data-id');
           const cid = $item.attr('data-cid');
-          const songInfo: Validation.SongInfo = {
+          const songInfo = {
             name: $item.find('.song-name-text a').text(),
             id: String(id),
             cid: String(cid),
@@ -57,7 +51,7 @@ module.exports = {
       case 'singer':
         $('.search-artist .search-artist-list').each((i, o) => {
           const $artist = cheerio(o);
-          const artist: Validation.ArtistInfo = {
+          const artist = {
             name: $artist.find('.artist-name').text(),
             id: getId($artist.find('.artist-name a').attr('href')),
             picUrl: $artist.find('.artist-info img').attr('src'),
@@ -71,7 +65,7 @@ module.exports = {
       case 'album':
         $('#artist-album-cont li').each((i, o) => {
           const $album = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
+          const artists = [];
           $album.find('.album-artist a').each((i, o) => {
             const $ar = cheerio(o);
             artists.push({
@@ -79,7 +73,7 @@ module.exports = {
               id: getId($ar.attr('href')),
             })
           });
-          const albumInfo: Validation.AlbumInfo = {
+          const albumInfo = {
             name: $album.find('.album-name').text().replace(/\n/g, ''),
             id: getId($album.find('.img-mask a').attr('href')),
             picUrl: $album.find('.music-cover img').attr('src'),
@@ -92,7 +86,7 @@ module.exports = {
       case 'playlist':
         $('#artist-album-cont li').each((i, o) => {
           const $playlist=  cheerio(o);
-          const playlistInfo: Validation.PlaylistInfo = {
+          const playlistInfo = {
             name: $playlist.find('.album-name').text().replace(/\n/g, ''),
             id: getId($playlist.find('.img-mask a').attr('href')),
             picUrl: $playlist.find('.music-cover img').attr('src'),
@@ -103,7 +97,7 @@ module.exports = {
       case 'mv':
         $('.search-mv li').each((i, o) => {
           const $mv = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
+          const artists = [];
           $mv.find('.mv-type a').each((i, o) => {
             const $ar = cheerio(o);
             artists.push({
@@ -111,7 +105,7 @@ module.exports = {
               id: getId($ar.attr('href')),
             })
           });
-          const mvInfo: Validation.MvInfo = {
+          const mvInfo = {
             name: '',
             id: getId($mv.find('.img-mask a').attr('href')),
             picUrl: $mv.find('.music-cover img').attr('src'),
@@ -123,7 +117,7 @@ module.exports = {
       case 'lyric':
         $('.search-lyric-list li').each((i, o) => {
           const $lyric = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
+          const artists = [];
           $lyric.find('.singer-name a').each((i, o) => {
             const $ar = cheerio(o);
             console.log($ar.attr('href'));
@@ -132,7 +126,7 @@ module.exports = {
               id: getId($ar.attr('href')),
             })
           });
-          const songInfo: Validation.SongInfo = {
+          const songInfo = {
             name: $lyric.find('.song-name-text').text().replace(/\n/g, ''),
             cid: getId($lyric.find('.song-name-text a').attr('href')),
             id: $lyric.attr('mid'),
