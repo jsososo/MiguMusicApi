@@ -1,0 +1,27 @@
+{
+  "name": "migumusicapi",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "ts-node bin/www"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.2",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1",
+    "ts-node": "^8.5.4",
+    "typescript": "^3.7.3"
+  },
+  "devDependencies": {
+    "axios": "^0.19.0",
+    "cheerio": "^1.0.0-rc.3",
+    "crypto-js": "^3.1.9-1",
+    "jsonfile": "^5.0.0",
+    "node-jsencrypt": "^1.0.0",
+    "xml2js": "^0.4.22"
+  }
+}

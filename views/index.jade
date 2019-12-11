@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  a(href="https://jsososo.github.io/MiguMusicApi") 查看文档
+  p 可以戳戳下面的链接看看
+  span 1、
+  a(href="http://api.migu.jsososo.com/search?keyword=周杰伦") 搜索接口
+  br
+  span 2、
+  a(href="http://api.migu.jsososo.com/lyric?cid=6005479Z068") 获取歌词
+  br
+  span 3、
+  a(href="http://api.migu.jsososo.com/song/url?cid=60054701923&id=3790007&needPic=1") 获取播放、图片链接
