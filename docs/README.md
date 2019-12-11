@@ -8,7 +8,7 @@
 
 灵感来源：[Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 
-灵感来源：[jsososo/MiguMusicApi](https://github.com/jsososo/MiguMusicApi) 没错，来自我自己～
+灵感来源：[jsososo/QQMusicApi](https://github.com/jsososo/QQMusicApi) 没错，来自我自己～
 
 ## Start
 
@@ -24,7 +24,7 @@ $ npm start
 
 项目默认端口为 3400
 
-**在线接口测试网址：[http://migu.qq.jsososo.com](http://migu.qq.jsososo.com)**
+**在线接口测试网址：[http://api.migu.jsososo.com](http://api.migu.jsososo.com)**
 
 ## 用前须知
 
@@ -110,3 +110,13 @@ $ npm start
 可以传入 `type` 和 `url`，如 `128k` 和 对应的播放链接，这时就会去重新获取链接更新服务器信息。
 
 栗子：[/song/url?id=3790007&cid=60054701923](http://api.migu.jsososo.com/song/url?id=3790007&cid=60054701923)
+
+### 获取歌词
+
+接口：`/song/lyric`
+
+参数：
+
+`cid`: 歌曲 cid 必填
+
+栗子：[/lyric?cid=60054701923](http://api.migu.jsososo.com/lyric?cid=60054701923)
