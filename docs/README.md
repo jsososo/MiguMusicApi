@@ -34,6 +34,9 @@ $ npm start
 本项目仅供学习使用，请尊重版权，请勿利用此项目从事商业行为!
 本项目仅供学习使用，请尊重版权，请勿利用此项目从事商业行为
 
+!> 测试接口仅供各位测试使用，不要大量的调用，部署端已经增设了高频ip的黑白名单限制，有需要的童鞋可以自行 clone 运行项目
+
+
 ## Feature
 
 - 搜索接口 （歌曲、歌单、专辑、mv、歌手、歌词）
@@ -67,11 +70,11 @@ $ npm start
 返回数据格式示例：
 ```javascript
 {
-	result: 100,
-	data: {
-		list: [...],
-		totalPage: 5,
-	}
+  result: 100,
+  data: {
+    list: [...],
+    totalPage: 5,
+  }
 }
 ```
 
@@ -120,3 +123,51 @@ $ npm start
 `cid`: 歌曲 cid 必填
 
 栗子：[/lyric?cid=60054701923](http://api.migu.jsososo.com/lyric?cid=60054701923)
+
+### 专辑信息
+
+接口： `/album`
+
+参数：
+
+`id`: 专辑 id 必填
+
+栗子：[/album?id=1003767159](http://api.migu.jsososo.com/album?id=1003767159)
+
+### 歌手
+
+#### 歌手介绍
+
+接口：`/singer/desc`
+
+参数：
+
+`id`: 歌手 id 必填
+
+栗子：[/singer/desc?id=112](http://api.migu.jsososo.com/singer/desc?id=112)
+
+#### 歌手歌曲
+
+接口：`/singer/songs`
+
+参数：
+
+`id`: 歌曲 id 必填
+
+`pageno`: 分页，默认 1
+
+这个接口中一页为20首歌曲，同样，返回 `totalPage` 参数不返回总数
+
+栗子：[/singer/songs?id=112](http://api.migu.jsososo.com/singer/songs?id=112)
+
+#### 歌手专辑
+
+接口：`/singer/albums`
+
+参数：
+
+`id`: 歌曲 id 必填
+
+`pageno`: 分页，默认 1
+
+栗子：[/singer/albums?id=112](http://api.migu.jsososo.com/singer/albums?id=112)

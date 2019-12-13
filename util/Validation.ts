@@ -15,11 +15,13 @@ namespace Validation {
   // 歌曲 信息
   export interface SongInfo {
     name: string,
-    artists: object[],
-    album: object,
+    artists: ArtistInfo[],
+    album: AlbumInfo,
     id: string,
     cid: string,
     mvid?: number,
+    picUrl?: string,
+    bigPicUrl?: string,
   }
 
   // 艺人 信息
@@ -40,6 +42,9 @@ namespace Validation {
     artists?: ArtistInfo[],
     picUrl?: string,
     publishTime?: string,
+    desc?: string,
+    company?: string,
+    songList?: SongInfo[],
   }
 
   // 歌单 信息
