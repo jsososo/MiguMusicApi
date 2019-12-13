@@ -8,11 +8,17 @@ const cheerio = require("cheerio");
 const request = require('./util/request');
 const StringHelper = require('./util/StringHelper');
 const SongUrlSaver = require('./util/SongUrl');
+const DataStatistics = require('./util/dataStatistics');
 
 const app = express();
 const UrlSaver = new SongUrlSaver();
+const dataHandle = new DataStatistics();
+global.dataStatistics = dataHandle;
 
 setInterval(() => UrlSaver.write(), 3600000 * 3);
+
+// 每5分钟存一下数据
+setInterval(() => dataHandle.saveInfo(), 60000 * 5);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,6 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use((req, res, next) => dataHandle.record(req, res, next));
 
 fs.readdirSync(path.join(__dirname, 'routes')).reverse().forEach(file => {
   const filename = file.replace(/(\.js|\.ts)$/, '');

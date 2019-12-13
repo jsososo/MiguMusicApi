@@ -21,7 +21,9 @@
     "cheerio": "^1.0.0-rc.3",
     "crypto-js": "^3.1.9-1",
     "jsonfile": "^5.0.0",
+    "moment": "^2.24.0",
     "node-jsencrypt": "^1.0.0",
+    "useragent": "^2.3.0",
     "xml2js": "^0.4.22"
   }
 }
