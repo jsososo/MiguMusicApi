@@ -2,6 +2,7 @@ module.exports = {
   async ['/']({ req, res, request, cheerio, getId, UrlSaver }) {
     const query = { ...req.query };
     query.type = query.type || 'song';
+    query.page = query.pageno;
     if (!query.keyword) {
       return res.send({
         result: 500,

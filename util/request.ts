@@ -86,6 +86,14 @@ export class request {
 
       return res.data;
     } catch (err) {
+      if (err.message === 'Request failed with status code 503') {
+        console.log('retry');
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(this.send(options, opts));
+          }, 300);
+        });
+      }
       const {res} = this;
       if (!res) {
         return {};

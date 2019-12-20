@@ -36,6 +36,12 @@ $ npm start
 
 !> 测试接口仅供各位测试使用，不要大量的调用，部署端已经增设了高频ip的黑白名单限制，有需要的童鞋可以自行 clone 运行项目
 
+## 已知问题
+
+其实这个项目并不适合用来作使用人数较多的后台，项目中很多接口是利用网页爬虫实现，当上一个爬虫接口还未返回时，
+下一个爬虫接口会返回 503 错误（咪咕返回），所以在 request 中加入了重试，如果是503错误会在 300ms 之后重试，
+这样可能导致接口返回缓慢，目前还没想好有什么好的解决方法。
+
 
 ## Feature
 
@@ -92,6 +98,20 @@ $ npm start
 上面的搜索接口不会。
 
 栗子：[/song/find?keyword=周杰伦+晴天](http://api.migu.jsososo.com/song/find?keyword=周杰伦+晴天)
+
+### 歌曲信息
+
+接口：`/song`
+
+参数：
+
+`id`: 歌曲 id 必填
+
+`cid`: 歌曲 cid 必填
+
+获取歌曲的基本信息，会返回歌曲的链接，如果只需要链接建议走下面的接口，更快一点
+
+栗子：[/song?id=3790007&cid=60054701923](http://api.migu.jsososo.com/song?id=3790007&cid=60054701923)
 
 ### 获取音乐、图片链接
 
@@ -171,3 +191,18 @@ $ npm start
 `pageno`: 分页，默认 1
 
 栗子：[/singer/albums?id=112](http://api.migu.jsososo.com/singer/albums?id=112)
+
+
+#### 歌单信息
+
+接口：`/playlist`
+
+参数：
+
+`id`: 歌单 id 必填
+
+`pageno`: 分页 默认 1
+
+一页显示20条内容，根据
+
+栗子：[/playlist?id=115481041](http://api.migu.jsososo.com/playlist?id=115481041)

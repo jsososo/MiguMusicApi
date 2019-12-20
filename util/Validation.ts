@@ -48,10 +48,17 @@ namespace Validation {
   }
 
   // 歌单 信息
-  export interface PlaylistInfo {
+  export type PlaylistInfo = {
     name: string,
     id: string,
     picUrl: string,
+    creator?: {
+      id: string,
+      name?: string,
+    },
+    playCount?: number | string,
+    totalPage?: number,
+    list?: SongInfo[],
   }
 
   // mv 信息
