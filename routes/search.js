@@ -1,6 +1,7 @@
 module.exports = {
   async ['/']({ req, res, request, cheerio, getId, UrlSaver }) {
     const query = { ...req.query };
+    query.page = query.pageno;
     query.type = query.type || 'song';
     if (!query.keyword) {
       return res.send({
@@ -54,7 +55,7 @@ module.exports = {
           const artist = {
             name: $artist.find('.artist-name').text(),
             id: getId($artist.find('.artist-name a').attr('href')),
-            picUrl: $artist.find('.artist-info img').attr('src'),
+            picUrl: $artist.find('.artist-info img').attr('data-original'),
             songCount: cheerio($artist.find('.artist-cont .cont-num')[0]).text(),
             albumCount: cheerio($artist.find('.artist-cont .cont-num')[1]).text(),
             mvCount: cheerio($artist.find('.artist-cont .cont-num')[2]).text(),
@@ -76,7 +77,7 @@ module.exports = {
           const albumInfo = {
             name: $album.find('.album-name').text().replace(/\n/g, ''),
             id: getId($album.find('.img-mask a').attr('href')),
-            picUrl: $album.find('.music-cover img').attr('src'),
+            picUrl: $album.find('.music-cover img').attr('data-original'),
             publishTime: $album.find('.album-time').text(),
             artists,
           };
@@ -89,7 +90,7 @@ module.exports = {
           const playlistInfo = {
             name: $playlist.find('.album-name').text().replace(/\n/g, ''),
             id: getId($playlist.find('.img-mask a').attr('href')),
-            picUrl: $playlist.find('.music-cover img').attr('src'),
+            picUrl: $playlist.find('.music-cover img').attr('data-original'),
           };
           searchResult.push(playlistInfo);
         });
@@ -108,7 +109,7 @@ module.exports = {
           const mvInfo = {
             name: '',
             id: getId($mv.find('.img-mask a').attr('href')),
-            picUrl: $mv.find('.music-cover img').attr('src'),
+            picUrl: $mv.find('.music-cover img').attr('data-original'),
             artists,
           };
           searchResult.push(mvInfo);

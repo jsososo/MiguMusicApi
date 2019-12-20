@@ -93,8 +93,7 @@ class DataStatistics {
       Hm: now.format('HH:mm'),
     };
     const nowYMD = now.format('YYYYMMDD');
-
-    if (!this.allData[nowYMD]) {
+    if (!this.allData[nowYMD] || !(this.allData[nowYMD] instanceof Array)) {
       this.allData[nowYMD] = [];
     }
     this.allData[nowYMD].push(data);

@@ -1,5 +1,43 @@
 module.exports = {
-  async ['/url']({ req, res, request, UrlSaver }) {
+  async ['/']({ req, res, request, UrlSaver, cheerio, getId }) {
+    const { cid, id } = req.query;
+    if (!id || !cid) {
+      return res.send({
+        result: 500,
+        errMsg: '有参数没传呀小老弟',
+      })
+    }
+
+    let urlInfo = UrlSaver.get(id);
+    if (!urlInfo) {
+      urlInfo = await UrlSaver.query(id, cid);
+    }
+    const result = await request.send(`http://music.migu.cn/v3/music/song/${cid}`, { dataType: 'raw' });
+    const $ = cheerio.load(result);
+    const artists = [];
+    $('.info_singer a').each((i, o) => {
+      artists.push({
+        id: getId(cheerio(o).attr('href')),
+        name: cheerio(o).text()
+      })
+    });
+    res.send({
+      result: 100,
+      data: {
+        name: $('.info_title').text(),
+        id,
+        cid,
+        artists,
+        album: {
+          name: $('.info_about a').text(),
+          id: getId($('.info_about a').attr('href')),
+        },
+        ...urlInfo,
+      },
+    })
+  },
+
+  async ['/url']({ req, res, UrlSaver }) {
     const { cid, id, type, url, needPic = '0' } = req.query;
     if (!id || !cid) {
       return res.send({
