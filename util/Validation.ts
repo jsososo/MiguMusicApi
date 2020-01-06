@@ -21,7 +21,7 @@ namespace Validation {
 
     album?: AlbumInfo,
     mvId?: string,
-    mvCId?: string,
+    mvCid?: string,
     url?: string,
     picUrl?: string,
     bigPicUrl?: string,

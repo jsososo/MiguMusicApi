@@ -43,9 +43,9 @@ module.exports = {
           return {
             name: songName,
             id,
-            cId: copyrightId,
+            cid: copyrightId,
             mvId,
-            mvCId: mcCopyrightId,
+            mvCid: mcCopyrightId,
             url: mp3,
             album: {
               picUrl: cover,
@@ -98,8 +98,8 @@ module.exports = {
             name: songName,
             id,
             mvId,
-            cId: copyrightId,
-            mvCId: mvCopyrightId,
+            cid: copyrightId,
+            mvCid: mvCopyrightId,
             album: {
               name: albumName,
               id: albumId,

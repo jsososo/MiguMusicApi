@@ -55,8 +55,8 @@ module.exports = {
       picUrl: picM,
       url: listenUrl,
       id: songId,
-      cId: copyrightId,
-      mvCId: mvCopyrightId,
+      cid: copyrightId,
+      mvCid: mvCopyrightId,
       name: songName,
       artists: singerId.map((id, i) => ({
         id,

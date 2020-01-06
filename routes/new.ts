@@ -7,7 +7,7 @@ module.exports = {
     const list: Validation.SongInfo[] = result.result.results.map(({ songData }) => ({
       name: songData.songName,
       id: songData.songId,
-      cId: songData.copyrightId,
+      cid: songData.copyrightId,
       artists: songData.singerName.map((name, i) => ({
         name,
         id: songData.singerId[i],
