@@ -27,7 +27,7 @@ module.exports = {
       playCount: $('.playcount').text().replace(/播放量：|\n/g, ''),
       totalPage,
       creator: {
-        id: getId($('.singer-name a').attr('href')),
+        // id: getId($('.singer-name a').attr('href')),
         name: $('.singer-name a').text(),
       }
     };

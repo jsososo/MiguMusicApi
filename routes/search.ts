@@ -1,8 +1,9 @@
+import SongInfo = Validation.SongInfo;
+
 module.exports = {
-  async ['/']({ req, res, request, cheerio, getId, UrlSaver }) {
+  async ['/']({ req, res, request }) {
     const query = { ...req.query };
     query.type = query.type || 'song';
-    query.page = query.pageno;
     if (!query.keyword) {
       return res.send({
         result: 500,
@@ -10,156 +11,110 @@ module.exports = {
       })
     }
 
-    const result: any = await request.send({
-      url: 'http://music.migu.cn/v3/search',
-      data: query,
-    }, {
-      dataType: 'raw',
+    const { keyword, pageNo = 1, pageSize = 20 } = query;
+    const typeMap = {
+      song: 2,
+      singer: 1,
+      album: 4,
+      playlist: 6,
+      mv: 5,
+      lyric: 7,
+    };
+
+
+    const result = await request.send({
+      url: 'http://m.music.migu.cn/migu/remoting/scr_search_tag',
+      data: {
+        keyword,
+        pgc: pageNo,
+        rows: pageSize,
+        type: typeMap[query.type],
+      },
     });
 
-    const $ = cheerio.load(result);
-
-    const searchResult:
-      (Validation.SongInfo |
-        Validation.ArtistInfo |
-        Validation.AlbumInfo |
-        Validation.MvInfo |
-        Validation.PlaylistInfo)[]
-        = [];
-
+    let data: Validation.SongInfo[] | Validation.ArtistInfo[] | Validation.AlbumInfo[] | Validation.MvInfo | Validation.PlaylistInfo[];
     switch (query.type) {
+      case 'lyric':
       case 'song':
-        $('.songlist-item.single-item').each((i, o) => {
-          const $item = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
-          $item.find('.song-singer a').each((i, v) => {
-            const $name = cheerio(v);
-            artists.push({
-              name: $name.text(),
-              id: getId($name.attr('href')),
-            })
-          });
-          const $album = $item.find('.song-album a');
-          const id = $item.attr('data-id');
-          const cid = $item.attr('data-cid');
-          const songInfo: Validation.SongInfo = {
-            name: $item.find('.song-name-text a').text(),
-            id: String(id),
-            cid: String(cid),
-            artists,
+        data = result.musics.map(({ songName, singerId, singerName, albumName, albumId, mp3, cover, id, copyrightId, mvId, mcCopyrightId }) => {
+          const singerIds = singerId.replace(/\s/g, '').split(',');
+          const singerNames = singerName.replace(/\s/g, '').split(',');
+          const artists: Validation.ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
+          return {
+            name: songName,
+            id,
+            cId: copyrightId,
+            mvId,
+            mvCId: mcCopyrightId,
+            url: mp3,
             album: {
-              name: $album.text(),
-              id: String($album.data('id')),
+              picUrl: cover,
+              name: albumName,
+              id: albumId,
             },
-          };
-          searchResult.push(songInfo);
+            artists,
+          }
         });
         break;
       case 'singer':
-        $('.search-artist .search-artist-list').each((i, o) => {
-          const $artist = cheerio(o);
-          const artist: Validation.ArtistInfo = {
-            name: $artist.find('.artist-name').text(),
-            id: getId($artist.find('.artist-name a').attr('href')),
-            picUrl: $artist.find('.artist-info img').attr('data-original'),
-            songCount: cheerio($artist.find('.artist-cont .cont-num')[0]).text(),
-            albumCount: cheerio($artist.find('.artist-cont .cont-num')[1]).text(),
-            mvCount: cheerio($artist.find('.artist-cont .cont-num')[2]).text(),
-          };
-          searchResult.push(artist);
-        });
+        data = result.artists.map(({ title, id, songNum, albumNum, artistPicM }) => ({
+          name: title,
+          id,
+          picUrl: artistPicM,
+          songCount: songNum,
+          albumCount: albumNum,
+        }));
         break;
       case 'album':
-        $('#artist-album-cont li').each((i, o) => {
-          const $album = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
-          $album.find('.album-artist a').each((i, o) => {
-            const $ar = cheerio(o);
-            artists.push({
-              name: $ar.text(),
-              id: getId($ar.attr('href')),
-            })
-          });
-          const albumInfo: Validation.AlbumInfo = {
-            name: $album.find('.album-name').text().replace(/\n/g, ''),
-            id: getId($album.find('.img-mask a').attr('href')),
-            picUrl: $album.find('.music-cover img').attr('data-original'),
-            publishTime: $album.find('.album-time').text(),
-            artists,
-          };
-          searchResult.push(albumInfo);
-        });
+        data = result.albums.map(({ albumPicM, singer, songNum, id, publishDate, title }) => ({
+          name: title,
+          id,
+          artists: singer,
+          songCount: songNum,
+          publishTime: publishDate,
+          picUrl: albumPicM,
+        }));
         break;
       case 'playlist':
-        $('#artist-album-cont li').each((i, o) => {
-          const $playlist=  cheerio(o);
-          const playlistInfo: Validation.PlaylistInfo = {
-            name: $playlist.find('.album-name').text().replace(/\n/g, ''),
-            id: getId($playlist.find('.img-mask a').attr('href')),
-            picUrl: $playlist.find('.music-cover img').attr('data-original'),
-          };
-          searchResult.push(playlistInfo);
-        });
+        data = result.songLists.map(({ name, img, id, playNum, musicNum, userName, userId, intro }) => ({
+          name,
+          id,
+          picUrl: img,
+          playCount: playNum,
+          songCount: musicNum,
+          intro,
+          creator: {
+            name: userName,
+            id: userId,
+          }
+        }));
         break;
       case 'mv':
-        $('.search-mv li').each((i, o) => {
-          const $mv = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
-          $mv.find('.mv-type a').each((i, o) => {
-            const $ar = cheerio(o);
-            artists.push({
-              name: $ar.text(),
-              id: getId($ar.attr('href')),
-            })
-          });
-          const mvInfo: Validation.MvInfo = {
-            name: '',
-            id: getId($mv.find('.img-mask a').attr('href')),
-            picUrl: $mv.find('.music-cover img').attr('data-original'),
-            artists,
-          };
-          searchResult.push(mvInfo);
-        });
-        break;
-      case 'lyric':
-        $('.search-lyric-list li').each((i, o) => {
-          const $lyric = cheerio(o);
-          const artists: Validation.ArtistInfo[] = [];
-          $lyric.find('.singer-name a').each((i, o) => {
-            const $ar = cheerio(o);
-            console.log($ar.attr('href'));
-            artists.push({
-              name: $ar.text(),
-              id: getId($ar.attr('href')),
-            })
-          });
-          const songInfo: Validation.SongInfo = {
-            name: $lyric.find('.song-name-text').text().replace(/\n/g, ''),
-            cid: getId($lyric.find('.song-name-text a').attr('href')),
-            id: $lyric.attr('mid'),
+        data = result.mv.map(({ songName, id, mvCopyrightId, mvId, copyrightId, albumName, albumId, singerName, singerId }) => {
+          const singerIds = singerId.replace(/\s/g, '').split(',');
+          const singerNames = singerName.replace(/\s/g, '').split(',');
+          const artists: Validation.ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
+          return {
+            name: songName,
+            id,
+            mvId,
+            cId: copyrightId,
+            mvCId: mvCopyrightId,
             album: {
-              name: $lyric.find('a.album-jump').first().text(),
-              id: $lyric.find('a.album-jump').first().attr('data-id'),
+              name: albumName,
+              id: albumId,
             },
             artists,
-          };
-          searchResult.push(songInfo);
+          }
         });
         break;
-      default: break;
     }
-
-    const pageList = [1];
-    $('.page a').each((i, p) => {
-      const $page = cheerio(p).text();
-      pageList.push(Number($page || 0));
-    });
 
     res.send({
       result: 100,
       data: {
-        list: searchResult,
-        totalPage: Math.max(...pageList),
+        list: data,
+        total: result.pgt,
       },
     });
   },

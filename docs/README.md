@@ -4,7 +4,7 @@
 
 `master` 分支为 ts 项目，`js` 分支为 js 项目，里面本质都是一样都，第一次写 ts 项目，肯定有不少不规范或者不太好的地方，也欢迎大家指出
 
-对于所有处理过的返回数据，都会包含 `result`，`100` 表示成功，`500` 表示穿参错误，`400` 为 node 捕获的未知异常
+对于所有处理过的返回数据，都会包含 `result`，`100` 表示成功，`500` 表示传参错误，`400` 为 node 捕获的未知异常
 
 灵感来源：[Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
 
@@ -13,7 +13,7 @@
 ## Start
 
 ```shell
-$ git clone git@github.com:jsososo/QQMusicApi.git
+$ git clone git@github.com:jsososo/MiguMusicApi.git
 
 $ npm install
 
@@ -54,6 +54,14 @@ $ npm start
 - 获取歌词接口
 
 ## 更新记录
+
+20-01-06：🍉 推荐、新歌，部分接口优化
+
+19-12-20：🍈 歌单接口、歌曲信息接口
+
+19-12-18：🍋 搜索接口优化
+
+19-12-13：🍎 歌手、专辑相关接口
 
 19-12-11：🍍 咪咕音乐！
 
@@ -144,7 +152,9 @@ $ npm start
 
 栗子：[/lyric?cid=60054701923](http://api.migu.jsososo.com/lyric?cid=60054701923)
 
-### 专辑信息
+### 专辑
+
+#### 专辑信息
 
 接口： `/album`
 
@@ -153,6 +163,16 @@ $ npm start
 `id`: 专辑 id 必填
 
 栗子：[/album?id=1003767159](http://api.migu.jsososo.com/album?id=1003767159)
+
+#### 专辑歌曲
+
+接口：`/album/songs`
+
+参数：
+
+`id`: 专辑 id 必填
+
+栗子：[/album/songs?id=1003767159](http://api.migu.jsososo.com/album/songs?id=1003767159)
 
 ### 歌手
 
@@ -193,7 +213,7 @@ $ npm start
 栗子：[/singer/albums?id=112](http://api.migu.jsososo.com/singer/albums?id=112)
 
 
-#### 歌单信息
+### 歌单信息
 
 接口：`/playlist`
 
@@ -203,6 +223,46 @@ $ npm start
 
 `pageno`: 分页 默认 1
 
-一页显示20条内容，根据
+一页显示20条内容，根据 `pageTotal` 来判断总页数
 
 栗子：[/playlist?id=115481041](http://api.migu.jsososo.com/playlist?id=115481041)
+
+### 推荐
+
+#### 推荐歌单
+
+接口：`/recommend/playlist`
+
+参数：
+
+`pageNo`: 默认 1
+
+`type`: 1: 推荐, 2: 最新，默认推荐
+
+一页显示10条。
+
+栗子：[/recommend/playlist](http://api.migu.jsososo.com/recommend/playlist)
+
+#### 新歌
+
+接口：`/new/songs`
+
+参数：
+
+`pageNo`: 默认 1
+
+`pageSize`: 默认 10
+
+栗子：[/new/songs](http://api.migu.jsososo.com/new/songs)
+
+#### 新专辑
+
+接口：`/new/albums`
+
+参数：
+
+`pageNo`: 默认 1
+
+`pageSize`: 默认 10
+
+栗子：[/new/albums](http://api.migu.jsososo.com/new/albums)

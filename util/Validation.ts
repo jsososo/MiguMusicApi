@@ -16,10 +16,13 @@ namespace Validation {
   export interface SongInfo {
     name: string,
     artists: ArtistInfo[],
-    album: AlbumInfo,
     id: string,
     cid: string,
-    mvid?: number,
+
+    album?: AlbumInfo,
+    mvId?: string,
+    mvCId?: string,
+    url?: string,
     picUrl?: string,
     bigPicUrl?: string,
   }
@@ -45,6 +48,7 @@ namespace Validation {
     desc?: string,
     company?: string,
     songList?: SongInfo[],
+    songCount?: string,
   }
 
   // 歌单 信息
@@ -52,12 +56,14 @@ namespace Validation {
     name: string,
     id: string,
     picUrl: string,
+    songCount?: number,
+    playCount?: number | string,
     creator?: {
-      id: string,
+      id?: string,
       name?: string,
     },
-    playCount?: number | string,
     totalPage?: number,
+    total?: number,
     list?: SongInfo[],
   }
 
