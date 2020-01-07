@@ -17,6 +17,7 @@ module.exports = {
     const name = $('.content .title').text();
     const publishTime = $('.content .pub-date').text().replace(/[^\d|-]/g, '');
     const picUrl = $('.mad-album-info .thumb-img').attr('src');
+    const songList: Validation.SongInfo[] = [];
     const artists: Validation.ArtistInfo[] = [];
     const company = $('.pub-company').text().replace(/^发行公司：/, '');
     $('.singer-name a').each((i, o) => {
@@ -24,6 +25,26 @@ module.exports = {
         id: getId(cheerio(o).attr('href')),
         name: cheerio(o).text()
       });
+    });
+    $('.songlist-body .J_CopySong').each((i, o) => {
+      const ar: Validation.ArtistInfo[] = [];
+      const $song = cheerio(o);
+      $song.find('.song-singers a').each((i, o) => {
+        ar.push({
+          id: getId(cheerio(o).attr('href')),
+          name: cheerio(o).text()
+        })
+      });
+      songList.push({
+        name: $song.find('.song-name-txt').text(),
+        id: $song.attr('data-mid'),
+        cid: $song.attr('data-cid'),
+        artists: ar,
+        album: {
+          name,
+          id,
+        }
+      })
     });
 
     const data: Validation.AlbumInfo = {
@@ -34,6 +55,7 @@ module.exports = {
       publishTime,
       picUrl,
       desc,
+      songList,
     };
 
     res.send({
