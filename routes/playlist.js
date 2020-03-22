@@ -1,6 +1,6 @@
 module.exports = {
   async ['/']({ res, getId, cheerio, req, request }) {
-    const { id, pageno: page } = req.query;
+    const { id, pageNo = 1, pageno = pageNo } = req.query;
     if (!id) {
       return res.send({
         result: 500,
@@ -8,7 +8,7 @@ module.exports = {
       })
     }
 
-    const result = await request.send(`http://music.migu.cn/v3/music/playlist/${id}?page=${page}`, { dataType: 'raw' });
+    const result = await request.send(`http://music.migu.cn/v3/music/playlist/${id}?page=${pageno}`, { dataType: 'raw' });
 
     const $ = cheerio.load(result);
     const pageList = [1];
