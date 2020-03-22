@@ -23,14 +23,15 @@ module.exports = {
     });
   },
   async ['/songs']({ res, req, request, cheerio, getId }) {
-    const { id, pageno = 1 } = req.query;
+    const { id, pageno, pageNo } = req.query;
+    let page = pageNo || pageno || 1;
     if (!id) {
       return res.send({
         result: 500,
         errMsg: 'id ?'
       })
     }
-    const result = await request.send(`http://music.migu.cn/v3/music/artist/${id}/song?page=${pageno}`, { dataType: 'raw' });
+    const result = await request.send(`http://music.migu.cn/v3/music/artist/${id}/song?page=${page}`, { dataType: 'raw' });
     const $ = cheerio.load(result);
     const list = [];
     $('.songlist-body .J_CopySong').each((i, o) => {
@@ -72,7 +73,7 @@ module.exports = {
     })
   },
   async ['/albums']({ res, req, request, cheerio, getId }) {
-    const { id, pageno = 1 } = req.query;
+    const { id, pageNo = 1, pageno = pageNo } = req.query;
     if (!id) {
       return res.send({
         result: 500,

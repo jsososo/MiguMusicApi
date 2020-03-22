@@ -11,7 +11,7 @@ module.exports = {
       })
     }
 
-    const { keyword, pageNo = 1, pageSize = 20 } = query;
+    const { keyword, pageno = 1, pageNo = pageno, pageSize = 20 } = query;
     const typeMap = {
       song: 2,
       singer: 1,

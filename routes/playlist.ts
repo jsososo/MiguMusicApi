@@ -1,6 +1,7 @@
 module.exports = {
   async ['/']({ res, getId, cheerio, req, request }) {
-    const { id, pageno: page } = req.query;
+    const { id, pageno, pageNo } = req.query;
+    let page = pageNo || pageno || 1;
     if (!id) {
       return res.send({
         result: 500,

@@ -79,7 +79,7 @@ $ npm start
 
 `type`: 默认 `song`，支持：`song`, `playlist`, `mv`, `singer`, `album`, `lyric`
 
-`pageno`: 默认 1
+`pageNo`: 默认 1
 
 ~这个接口是急于爬虫实现的，不支持返回条数控制，也不知道总条数，但是会在返回参数里告诉你总页码，实测返回的条数也不固定。~
 
@@ -200,7 +200,7 @@ $ npm start
 
 `id`: 歌曲 id 必填
 
-`pageno`: 分页，默认 1
+`pageNo`: 分页，默认 1
 
 这个接口中一页为20首歌曲，同样，返回 `totalPage` 参数不返回总数
 
@@ -214,7 +214,7 @@ $ npm start
 
 `id`: 歌曲 id 必填
 
-`pageno`: 分页，默认 1
+`pageNo`: 分页，默认 1
 
 栗子：[/singer/albums?id=112](http://api.migu.jsososo.com/singer/albums?id=112)
 
@@ -227,7 +227,7 @@ $ npm start
 
 `id`: 歌单 id 必填
 
-`pageno`: 分页 默认 1
+`pageNo`: 分页 默认 1
 
 一页显示20条内容，根据 `pageTotal` 来判断总页数
 
