@@ -2,8 +2,6 @@
 
 这是一个基于 Express + Axios 的 Nodejs 项目，一切仅供学习参考，该支持的还是要支持的，不然杰伦喝不起奶茶了。
 
-`master` 分支为 ts 项目，`js` 分支为 js 项目，里面本质都是一样都，第一次写 ts 项目，肯定有不少不规范或者不太好的地方，也欢迎大家指出
-
 对于所有处理过的返回数据，都会包含 `result`，`100` 表示成功，`500` 表示传参错误，`400` 为 node 捕获的未知异常
 
 灵感来源：[Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
@@ -22,7 +20,7 @@ $ npm start
 
 默认已经全局安装 `typescript` 和 `ts-node` 没有的童鞋 全局安装一下哈，js 分支就不用了
 
-项目默认端口为 3400
+项目默认端口为 3400，可以在启动参数或 `bin/config.js` 中修改
 
 **在线接口测试网址：[http://api.migu.jsososo.com](http://api.migu.jsososo.com)**
 
@@ -54,6 +52,8 @@ $ npm start
 - 获取歌词接口
 
 ## 更新记录
+
+20-05-26：🌶️ 链接、歌单接口调整
 
 20-01-07：🍆 专辑接口调整
 
@@ -119,11 +119,11 @@ $ npm start
 
 `id`: 歌曲 id 必填
 
-`cid`: 歌曲 cid 必填
+`type`: `128`, `320`, `flac`, 返回歌曲链接的码率 默认 `128`，
 
-获取歌曲的基本信息，会返回歌曲的链接，如果只需要链接建议走下面的接口，更快一点
+这个是获取歌曲的基本信息，会返回歌曲的链接
 
-栗子：[/song?id=3790007&cid=60054701923](http://api.migu.jsososo.com/song?id=3790007&cid=60054701923)
+栗子：[/song?id=3790007](http://api.migu.jsososo.com/song?id=3790007)
 
 ### 获取音乐、图片链接
 
@@ -133,22 +133,15 @@ $ npm start
 
 `id`: 歌曲 id 必填
 
-`cid`: 歌曲 cid 必填
+`type`: `128`, `320`, `flac`, 返回歌曲链接的码率 默认 `128`，
 
-`needPic`: 是否需要返回图片链接，默认 0 ，0：不需要，1：需要
+`isRedirect`: 默认 `0`, 非 `0` 时为重定向至播放链接
 
-`type`: 更新链接时需要
-
-`url`: 更新链接时需要
-
-这个接口每次获取完链接后会把这些url信息用json的方式存储到服务器，这样可以避免频繁的调用接口，如果服务器上存储的链接已经失效，需要更新时，
-可以传入 `type` 和 `url`，如 `128k` 和 对应的播放链接，这时就会去重新获取链接更新服务器信息。
-
-栗子：[/song/url?id=3790007&cid=60054701923](http://api.migu.jsososo.com/song/url?id=3790007&cid=60054701923)
+栗子：[/song/url?id=3790007](http://api.migu.jsososo.com/song/url?id=3790007)
 
 ### 获取歌词
 
-接口：`/song/lyric`
+接口：`/lyric`
 
 参数：
 
@@ -227,9 +220,7 @@ $ npm start
 
 `id`: 歌单 id 必填
 
-`pageNo`: 分页 默认 1
-
-一页显示20条内容，根据 `pageTotal` 来判断总页数
+返回歌单数据以及歌单中有版权的歌曲信息
 
 栗子：[/playlist?id=115481041](http://api.migu.jsososo.com/playlist?id=115481041)
 

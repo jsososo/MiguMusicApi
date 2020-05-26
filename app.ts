@@ -11,9 +11,6 @@ import * as StringHelper from './util/StringHelper';
 import SongUrlSaver from './util/SongUrl';
 
 const app = express();
-const UrlSaver = new SongUrlSaver();
-
-setInterval(() => UrlSaver.write(), 3600000 * 3);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -49,8 +46,8 @@ fs.readdirSync(path.join(__dirname, 'routes')).reverse().forEach(file => {
         next,
         request: new request({ req, res, next }),
         cheerio,
+        port: app.get('port'),
         ...StringHelper,
-        UrlSaver,
       });
       if (rObj.post) {
         router.post(path, func);

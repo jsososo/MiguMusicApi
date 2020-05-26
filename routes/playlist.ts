@@ -1,67 +1,43 @@
 module.exports = {
-  async ['/']({ res, getId, cheerio, req, request }) {
-    const { id, pageno, pageNo } = req.query;
-    let page = pageNo || pageno || 1;
-    if (!id) {
+  async ['/']({ res, req, request, port }) {
+    const { id } = req.query;
+    const playListRes = await request.send(`http://m.music.migu.cn/migu/remoting/playlist_query_tag?onLine=1&queryChannel=0&createUserId=migu&contentCountMin=5&playListId=${id}`);
+
+    if (!playListRes.playlist || !playListRes.playlist[0]) {
       return res.send({
-        result: 500,
-        errMsg: 'id ？',
+        result: 200,
+        errMsg: playListRes.info,
       })
     }
-
-    const result = await request.send(`http://music.migu.cn/v3/music/playlist/${id}?page=${page}`, { dataType: 'raw' });
-
-    const $ = cheerio.load(result);
-    const pageList = [1];
-    let totalPage = 1;
-    $('.page a').each((i, o) => {
-      const pNo = Number(cheerio(o).text());
-      if (pNo === pNo) {
-        pageList.push(pNo);
-      }
-      totalPage = Math.max(...pageList);
-    });
+    const listInfo = playListRes.playlist[0];
+    const { playListName: name, createName, createUserId, playCount, contentCount, image: picUrl, summary: desc, createTime, updateTime, tagLists, playListType } = listInfo;
     const baseInfo = {
-      name: $('h1.title').text(),
+      name,
       id,
-      picUrl: $('.thumb-img').attr('src'),
-      playCount: $('.playcount').text().replace(/播放量：|\n/g, ''),
-      totalPage,
+      picUrl,
+      playCount,
+      trackCount: contentCount,
+      desc,
       creator: {
-        // id: getId($('.singer-name a').attr('href')),
-        name: $('.singer-name a').text(),
-      }
-    };
-    const list: Validation.SongInfo[] = [];
-    $('.row.J_CopySong').each((i, o) => {
-      const $song = cheerio(o);
-      const artists: Validation.ArtistInfo[] = [];
-      $song.find('.J_SongSingers a').each((i, o) => {
-        artists.push({
-          id: getId(cheerio(o).attr('href')),
-          name: cheerio(o).text(),
-        })
-      });
-      const $album = $song.find('.song-belongs a').first();
-      list.push({
-        name: $song.find('.song-name-txt').text(),
-        id: $song.attr('data-mid'),
-        cid: $song.attr('data-cid'),
-        artists,
-        album: {
-          id: getId($album.attr('href')),
-          name: $album.text().replace(/《|》/g, ''),
-        }
-      });
-    });
-    const data: Validation.PlaylistInfo = {
-      ...baseInfo,
-      list,
+        id: createUserId,
+        name: createName || '',
+      },
+      createTime,
+      updateTime,
+      tagLists,
+      list: [],
     };
 
-    res.send({
-      result: 100,
-      data,
+    const { contentList = [] } = await request.send(`http://m.music.migu.cn/migu/remoting/playlistcontents_query_tag?playListType=${playListType}&playListId=${id}&contentCount=${contentCount}`)
+
+    Promise.all(contentList.map(({ songId }) => (
+      request.send(`http://127.0.0.1:${port}/song?id=${songId}`)
+    ))).then((resArr) => {
+      baseInfo.list = resArr.map(({ data }) => data).filter((o) => Boolean(o));
+      return res.send({
+        result: 100,
+        data: baseInfo,
+      })
     })
   },
 };

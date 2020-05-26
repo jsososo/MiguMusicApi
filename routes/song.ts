@@ -1,91 +1,112 @@
 module.exports = {
-  async ['/']({ req, res, request, UrlSaver, cheerio, getId }) {
-    const { cid, id } = req.query;
-    if (!id || !cid) {
+  async ['/']({ req, res, request }) {
+    const { id, type = '128' } = req.query;
+    if (!id) {
       return res.send({
         result: 500,
         errMsg: '有参数没传呀小老弟',
       })
     }
 
-    let urlInfo = UrlSaver.get(id);
-    if (!urlInfo) {
-      urlInfo = await UrlSaver.query(id, cid);
-    }
-    const result = await request.send(`http://music.migu.cn/v3/music/song/${cid}`, { dataType: 'raw' });
-    const $ = cheerio.load(result);
-    const artists: Validation.ArtistInfo[] = [];
-    $('.info_singer a').each((i, o) => {
-      artists.push({
-        id: getId(cheerio(o).attr('href')),
-        name: cheerio(o).text()
-      })
-    });
-    res.send({
-      result: 100,
+    const result = await request.send({
+      url: 'http://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/listen-url',
       data: {
-        name: $('.info_title').text(),
-        id,
-        cid,
-        artists,
-        album: {
-          name: $('.info_about a').text(),
-          id: getId($('.info_about a').attr('href')),
-        },
-        ...urlInfo,
+        netType: '01',
+        resourceType: 'E',
+        songId: id,
+        toneFlag: {
+          128: 'PQ',
+          320: 'HQ',
+          flac: 'SQ',
+        }[type],
+        dataType: 2,
+        // data: c,
+        // secKey: f,
       },
-    })
-  },
-
-  async ['/url']({ req, res, request, UrlSaver }) {
-    const { cid, id, type, url, needPic = '0' } = req.query;
-    if (!id || !cid) {
+      headers: {
+        referer: 'http://music.migu.cn/v3/music/player/audio',
+        channel: '0146951',
+        uid: 1234,
+      }
+    });
+    if (!result || result.code !== '000000') {
       return res.send({
-        result: 500,
-        errMsg: '有参数没传呀小老弟',
+        result: 200,
+        errMsg: result.info,
       })
     }
-
-    let saveInfo: Validation.SongUrlMap = UrlSaver.get(id);
-    // 如果都能对得上，那就开启强制请求
-    if (type && url && UrlSaver.check(id, type, url)) {
-      saveInfo = undefined;
-    }
-
-    if (saveInfo) {
-      if (!Number(needPic)) {
-        delete saveInfo.pic;
-        delete saveInfo.bgPic;
-      }
-      return res.send({
-        result: 100,
-        data: saveInfo,
-      });
-    }
-
-    const result = await UrlSaver.query(id, cid);
-
-    if (!Number(needPic)) {
-      delete result.pic;
-      delete result.bgPic;
-    }
+    const { songItem } = result.data;
+    const { songName, songId, copyrightId, artists, album, albumId, albumImgs, songDescs, singerImg } = songItem;
 
     return res.send({
       result: 100,
-      data: result,
+      data: {
+        name: songName,
+        id: songId,
+        cid: copyrightId,
+        artists: artists.map((o) => ({
+          ...o,
+          picUrl: singerImg[o.id].img,
+        })),
+        album: {
+          name: album,
+          id: albumId,
+          picUrl: albumImgs[0] && albumImgs[0].img,
+        },
+        desc: songDescs,
+        url: result.data.url,
+      }
     });
   },
 
-  async ['/url/save']({ res, UrlSaver }) {
-    UrlSaver.write();
+  async ['/url']({ req, res, request }) {
+    const { id, type = '128', isRedirect = '0' } = req.query;
+    if (!id) {
+      return res.send({
+        result: 500,
+        errMsg: '有参数没传呀小老弟',
+      })
+    }
 
-    res.send({
-      result: 100,
-      data: '就当成功了吧!'
-    })
+    const result = await request.send({
+      url: 'http://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/listen-url',
+      data: {
+        netType: '01',
+        resourceType: 'E',
+        songId: id,
+        toneFlag: {
+          128: 'PQ',
+          320: 'HQ',
+          flac: 'SQ',
+        }[type],
+        dataType: 2,
+        // data: c,
+        // secKey: f,
+      },
+      headers: {
+        referer: 'http://music.migu.cn/v3/music/player/audio',
+        channel: '0146951',
+        uid: 1234,
+      }
+    });
+
+    if (result.code === '000000') {
+      if (Number(isRedirect)) {
+        return res.redirect(result.data.url);
+      }
+      return res.send({
+        result: 100,
+        data: result.data.url,
+      });
+    } else {
+      return res.send({
+        result: 200,
+        data: result.info,
+      })
+    }
   },
 
-  async ['/find']({ req, res, request, UrlSaver }) {
+  async ['/find']({ req, res, request, port }) {
     const { keyword } = req.query;
     if (!keyword) {
       return res.send({
@@ -93,17 +114,10 @@ module.exports = {
         errMsg: '搜啥呢？',
       })
     }
-    const songRes = await request.send(`http://127.0.0.1:3400/search?keyword=${keyword}`);
+    const songRes = await request.send(`http://127.0.0.1:${port}/search?keyword=${keyword}`);
     let songInfo;
-    let urlInfo;
     if (songRes && songRes.data && songRes.data.list && songRes.data.list.length > 0) {
       songInfo = songRes.data.list[0];
-      const { id, cid } = songInfo;
-      urlInfo = UrlSaver.get(id);
-      if (!urlInfo) {
-        urlInfo = await UrlSaver.query(id, cid);
-      }
-      songInfo = { ...songInfo, ...urlInfo };
     }
 
     res.send({

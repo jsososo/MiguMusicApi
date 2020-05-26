@@ -30,37 +30,46 @@ export default class SongUrlSaver {
   async query(id: string, cid: string): Promise<object> {
     try {
       const req = new request({});
-      // 一套神秘的加密环节！
-      const publicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8asrfSaoOb4je+DSmKdriQJKW
-VJ2oDZrs3wi5W67m3LwTB9QVR+cE3XWU21Nx+YBxS0yun8wDcjgQvYt625ZCcgin
-2ro/eOkNyUOTBIbuj9CvMnhUYiR61lC1f1IGbrSYYimqBVSjpifVufxtx/I3exRe
-ZosTByYp4Xwpb1+WAQIDAQAB
------END PUBLIC KEY-----`;
-      const o = `{"copyrightId":"${cid}","auditionsFlag":0}`;
-      const s = new JsEncrypt;
-      s.setPublicKey(publicKey);
-      const a = 1e3 * Math.random();
-      const u = CrypotJs.SHA256(String(a)).toString();
-      const c = CrypotJs.lib.Cipher._createHelper(CrypotJs.algo.AES).encrypt(o, u).toString();
-      const f = s.encrypt(u);
+      //       // 一套神秘的加密环节！
+      //       const publicKey = `-----BEGIN PUBLIC KEY-----
+      // MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC8asrfSaoOb4je+DSmKdriQJKW
+      // VJ2oDZrs3wi5W67m3LwTB9QVR+cE3XWU21Nx+YBxS0yun8wDcjgQvYt625ZCcgin
+      // 2ro/eOkNyUOTBIbuj9CvMnhUYiR61lC1f1IGbrSYYimqBVSjpifVufxtx/I3exRe
+      // ZosTByYp4Xwpb1+WAQIDAQAB
+      // -----END PUBLIC KEY-----`;
+      //       const o = `{"copyrightId":"${cid}","auditionsFlag":0}`;
+      //       const s = new JsEncrypt;
+      //       s.setPublicKey(publicKey);
+      // const a = 1e3 * Math.random();
+      // const u = CrypotJs.SHA256(String(a)).toString();
+      // const c = CrypotJs.lib.Cipher._createHelper(CrypotJs.algo.AES).encrypt(o, u).toString();
+      // const f = s.encrypt(u);
       const result = await req.send({
-        url: 'http://music.migu.cn/v3/api/music/audioPlayer/getPlayInfo',
+        url: 'http://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/listen-url',
         data: {
+          netType: '01',
+          resourceType: 'E',
+          songId: id,
+          toneFlag: 'LQ',
           dataType: 2,
-          data: c,
-          secKey: f,
+          // data: c,
+          // secKey: f,
         },
         headers: {
-          referer: 'http://music.migu.cn/v3/music/player/audio'
+          referer: 'http://music.migu.cn/v3/music/player/audio',
+          channel: '0146951',
+          uid: 1234,
         }
       });
 
-      if (!result || result.msg !== '成功') {
-        return {};
-      }
+
+      // if (!result || result.msg !== '成功') {
+      //   return {};
+      // }
 
       const obj: Validation.SongUrlMap = {};
+      obj.flac = result.data.url;
+      console.log(result, result.data.url);
       const sizeMap = {
         bqPlayInfo: '128k',
         hqPlayInfo: '320k',
