@@ -64,7 +64,7 @@ export class request {
 
       // const cookieObj: object = (Number(query.ownCookie) ? cookies : userCookie) || {};
       options.headers = options.headers || {};
-      options.headers.referer = options.headers.referer || 'http://music.migu.cn/v3';
+      options.headers.referer = options.headers.referer || 'http://m.music.migu.cn/v3';
       options.xsrfCookieName = 'XSRF-TOKEN';
       options.withCredentials = true;
       // options.headers.Cookie = Object.keys(cookieObj).map((k: string): string => `${k}=${cookieObj[k]}`).join('; ');

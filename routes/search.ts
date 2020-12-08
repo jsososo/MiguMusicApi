@@ -1,5 +1,3 @@
-import SongInfo = Validation.SongInfo;
-
 module.exports = {
   async ['/']({ req, res, request }) {
     const query = { ...req.query };
@@ -23,7 +21,7 @@ module.exports = {
 
 
     const result = await request.send({
-      url: 'http://m.music.migu.cn/migu/remoting/scr_search_tag',
+      url: 'https://m.music.migu.cn/migu/remoting/scr_search_tag',
       data: {
         keyword,
         pgc: pageNo,
@@ -31,6 +29,16 @@ module.exports = {
         type: typeMap[query.type],
       },
     });
+
+    if (!result) {
+      return res.send({
+        result: 100,
+        data: {
+          list: [],
+          total: 0,
+        },
+      })
+    }
 
     let data: Validation.SongInfo[] | Validation.ArtistInfo[] | Validation.AlbumInfo[] | Validation.MvInfo | Validation.PlaylistInfo[];
     switch (query.type) {
