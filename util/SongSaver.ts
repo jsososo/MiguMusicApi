@@ -9,7 +9,9 @@ export default class SongSaver {
     jsonFile.readFile('data/songUrl.json')
       .then((res) => {
         this.data = res;
-      });
+      }).catch(() => {
+        this.data = {}
+    });
   }
 
   private data: {
@@ -96,6 +98,6 @@ ZosTByYp4Xwpb1+WAQIDAQAB
   }
 
   write() {
-    jsonFile.writeFile('data/songUrl.json', this.data);
+    jsonFile.writeFile('data/songUrl.json', this.data).catch(() => {});
   }
 }

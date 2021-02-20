@@ -1,4 +1,3 @@
-import SongInfo = Validation.SongInfo;
 module.exports = {
   async ['/']({ req, res, songSaver, getBatchSong, request}) {
     const { cid } = req.query;
@@ -9,7 +8,7 @@ module.exports = {
       })
     }
 
-    let song:SongInfo = (await getBatchSong([cid], request))[0];
+    let song:Validation.SongInfo = (await getBatchSong([cid], request))[0];
     song = await songSaver.query(cid, song);
     return res ? res.send(
       {
@@ -27,7 +26,7 @@ module.exports = {
         errMsg: '有参数没传呀小老弟',
       })
     }
-    const info:SongInfo = await songSaver.query(cid);
+    const info:Validation.SongInfo = await songSaver.query(cid);
 
     let url = info.url || '';
     if (flac/1) {
@@ -52,7 +51,7 @@ module.exports = {
     }
     const search = require('./search')['/'];
     const songRes = await search({ req: { query: { keyword }}, request }).catch(() => ({}));
-    let s:SongInfo;
+    let s:Validation.SongInfo;
     if ((songRes.list || []).length) {
       if (duration/1) {
         const cids = songRes.list.splice(0, 3).map(({ cid }) => cid);
