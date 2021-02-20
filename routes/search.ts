@@ -19,7 +19,6 @@ module.exports = {
       lyric: 7,
     };
 
-
     const result = await request.send({
       url: 'https://m.music.migu.cn/migu/remoting/scr_search_tag',
       data: {
@@ -31,7 +30,7 @@ module.exports = {
     });
 
     if (!result) {
-      return res.send({
+      return res && res.send({
         result: 100,
         data: {
           list: [],
@@ -118,6 +117,12 @@ module.exports = {
         break;
     }
 
+    if (!res) {
+      return {
+        list: data,
+        total: result.pgt,
+      }
+    }
     res.send({
       result: 100,
       data: {

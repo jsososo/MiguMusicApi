@@ -7,11 +7,12 @@ import logger = require('morgan');
 import fs = require('fs');
 import cheerio = require("cheerio");
 import { request } from './util/request';
-import * as StringHelper from './util/StringHelper';
-import SongUrlSaver from './util/SongUrl';
+import * as Util from './util/util';
+import SongSaver from './util/SongSaver';
 
 const app = express();
 
+const songSaver = new SongSaver();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -47,7 +48,8 @@ fs.readdirSync(path.join(__dirname, 'routes')).reverse().forEach(file => {
         request: new request({ req, res, next }),
         cheerio,
         port: app.get('port'),
-        ...StringHelper,
+        ...Util,
+        songSaver,
       });
       if (rObj.post) {
         router.post(path, func);

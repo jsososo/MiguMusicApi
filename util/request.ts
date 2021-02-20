@@ -1,6 +1,6 @@
 var axios = require("axios");
 var xml2js = require('xml2js').xml2js;
-var changeUrlQuery = require('./StringHelper').changeUrlQuery;
+var changeUrlQuery = require('./util').changeUrlQuery;
 
 interface Headers {
   Cookie?: string,

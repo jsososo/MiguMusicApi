@@ -14,17 +14,18 @@ namespace Validation {
 
   // 歌曲 信息
   export interface SongInfo {
-    name: string,
-    artists: ArtistInfo[],
-    id: string,
-    cid: string,
-
+    name?: string,
+    artists?: ArtistInfo[],
+    id?: string,
+    cid?: string,
+    lyric?: string,
     album?: AlbumInfo,
     mvId?: string,
     mvCid?: string,
     url?: string,
     picUrl?: string,
     bigPicUrl?: string,
+    flac?: string,
   }
 
   // 艺人 信息
@@ -49,6 +50,7 @@ namespace Validation {
     company?: string,
     songList?: SongInfo[],
     songCount?: string,
+    duration?: number,
   }
 
   // 歌单 信息
@@ -81,7 +83,9 @@ namespace Validation {
   // 歌曲 url，pic 和 bigPic 表示图片和大图
   export type SongUrlMap = {
     '128k'?: string,
+    '120'?: string,
     '320k'?: string,
+    '320'?: string,
     'flac'?: string,
     'pic'? : string,
     'bgPic'? : string,

@@ -1,129 +1,72 @@
+import SongInfo = Validation.SongInfo;
 module.exports = {
-  async ['/']({ req, res, request }) {
-    const { id, type = '128' } = req.query;
-    if (!id) {
+  async ['/']({ req, res, songSaver, getBatchSong, request}) {
+    const { cid } = req.query;
+    if (!cid) {
       return res.send({
         result: 500,
         errMsg: '有参数没传呀小老弟',
       })
     }
 
-    const result = await request.send({
-      url: 'http://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/listen-url',
-      data: {
-        netType: '01',
-        resourceType: 'E',
-        songId: id,
-        toneFlag: {
-          128: 'PQ',
-          320: 'HQ',
-          flac: 'SQ',
-        }[type],
-        dataType: 2,
-        // data: c,
-        // secKey: f,
-      },
-      headers: {
-        referer: 'http://music.migu.cn/v3/music/player/audio',
-        channel: '0146951',
-        uid: 1234,
+    let song:SongInfo = (await getBatchSong([cid], request))[0];
+    song = await songSaver.query(cid, song);
+    return res ? res.send(
+      {
+        result: 100,
+        data: song,
       }
-    });
-    if (!result || result.code !== '000000') {
+    ) : song;
+  },
+
+  async ['/url']({ req, res, songSaver }) {
+    const { cid, flac = '0' ,isRedirect = '0' } = req.query;
+    if (!cid) {
       return res.send({
-        result: 200,
-        errMsg: result.info,
+        result: 500,
+        errMsg: '有参数没传呀小老弟',
       })
     }
-    const { songItem } = result.data;
-    const { songName, songId, copyrightId, artists, album, albumId, albumImgs, songDescs, singerImg } = songItem;
+    const info:SongInfo = await songSaver.query(cid);
 
+    let url = info.url || '';
+    if (flac/1) {
+      url = info.flac || url;
+    }
+    if (isRedirect/1) {
+      return res.redirect(url);
+    }
     return res.send({
       result: 100,
-      data: {
-        name: songName,
-        id: songId,
-        cid: copyrightId,
-        artists: artists.map((o) => ({
-          ...o,
-          picUrl: singerImg[o.id].img,
-        })),
-        album: {
-          name: album,
-          id: albumId,
-          picUrl: albumImgs[0] && albumImgs[0].img,
-        },
-        desc: songDescs,
-        url: result.data.url,
-      }
-    });
+      data: url,
+    })
   },
 
-  async ['/url']({ req, res, request }) {
-    const { id, type = '128', isRedirect = '0' } = req.query;
-    if (!id) {
-      return res.send({
-        result: 500,
-        errMsg: '有参数没传呀小老弟',
-      })
-    }
-
-    const result = await request.send({
-      url: 'http://app.c.nf.migu.cn/MIGUM2.0/v2.0/content/listen-url',
-      data: {
-        netType: '01',
-        resourceType: 'E',
-        songId: id,
-        toneFlag: {
-          128: 'PQ',
-          320: 'HQ',
-          flac: 'SQ',
-        }[type],
-        dataType: 2,
-        // data: c,
-        // secKey: f,
-      },
-      headers: {
-        referer: 'http://music.migu.cn/v3/music/player/audio',
-        channel: '0146951',
-        uid: 1234,
-      }
-    });
-
-    if (result.code === '000000') {
-      if (Number(isRedirect)) {
-        return res.redirect(result.data.url);
-      }
-      return res.send({
-        result: 100,
-        data: result.data.url,
-      });
-    } else {
-      return res.send({
-        result: 200,
-        data: result.info,
-      })
-    }
-  },
-
-  async ['/find']({ req, res, request, port }) {
-    const { keyword } = req.query;
+  async ['/find']({ req, res, request, songSaver, getBatchSong }) {
+    const { keyword, duration = 0 } = req.query;
     if (!keyword) {
       return res.send({
         result: 500,
         errMsg: '搜啥呢？',
       })
     }
-    const songRes = await request.send(`http://127.0.0.1:${port}/search?keyword=${keyword}`);
-    let songInfo;
-    if (songRes && songRes.data && songRes.data.list && songRes.data.list.length > 0) {
-      songInfo = songRes.data.list[0];
+    const search = require('./search')['/'];
+    const songRes = await search({ req: { query: { keyword }}, request }).catch(() => ({}));
+    let s:SongInfo;
+    if ((songRes.list || []).length) {
+      if (duration/1) {
+        const cids = songRes.list.splice(0, 3).map(({ cid }) => cid);
+        const list = await getBatchSong(cids, request);
+        s = list.find(({ duration: d }) => d <= (duration/1 + 3) && d >= (duration - 3));
+      } else {
+        s = songRes.list[0];
+      }
     }
+    s && s.cid && (s = await songSaver.query(s.cid, s));
 
-    res.send({
+    return res ? res.send({
       result: 100,
-      data: songInfo,
-    })
-
+      data: s,
+    }) : s
   },
 };
