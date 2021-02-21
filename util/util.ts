@@ -49,7 +49,7 @@ export async function getBatchSong(cids: string[] = [], request): Promise<SongIn
     name: songName,
     artists: singers.map(({ artistId, artistName }) => ({ id: artistId, name: artistName })),
     album: albums[0] ? { id: albums[0].albumId, name: albums[0].albumId } : undefined,
-    duration: length.split(':').reduce((t, v, i) => t + Number(v) * Math.pow(60, 2 - i), 0),
+    duration: (length || '00:00:00').split(':').reduce((t, v, i) => t + Number(v) * Math.pow(60, 2 - i), 0),
     mvId: mvList[0] ? mvList[0].mvId : undefined,
     mvCid: mvList[0] ? mvList[0].copyrightId : undefined,
   }))
