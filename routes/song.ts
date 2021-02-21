@@ -54,7 +54,7 @@ module.exports = {
     let s:Validation.SongInfo;
     if ((songRes.list || []).length) {
       if (duration/1) {
-        const cids = songRes.list.splice(0, 3).map(({ cid }) => cid);
+        const cids = songRes.list.splice(0, 5).map(({ cid }) => cid);
         const list = await getBatchSong(cids, request);
         s = list.find(({ duration: d }) => d <= (duration/1 + 3) && d >= (duration - 3));
       } else {
