@@ -42,7 +42,7 @@ module.exports = {
   },
 
   async ['/find']({ req, res, request, songSaver, getBatchSong }) {
-    const { keyword, duration = 0 } = req.query;
+    const { keyword, duration = 0, noMatch = [] } = req.query;
     if (!keyword) {
       return res.send({
         result: 500,
@@ -54,7 +54,10 @@ module.exports = {
     let s:Validation.SongInfo;
     if ((songRes.list || []).length) {
       if (duration/1) {
-        const cids = songRes.list.splice(0, 5).map(({ cid }) => cid);
+        const cids = songRes.list
+          .splice(0, noMatch.length + 5)
+          .filter(({ cid }) => noMatch.indexOf(cid) === -1)
+          .map(({ cid }) => cid);
         const list = await getBatchSong(cids, request);
         s = list.find(({ duration: d }) => d <= (duration/1 + 3) && d >= (duration - 3));
       } else {
