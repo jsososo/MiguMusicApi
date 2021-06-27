@@ -43,7 +43,7 @@ module.exports = {
     switch (query.type) {
       case 'lyric':
       case 'song':
-        data = result.musics.map(({ songName, singerId, singerName, albumName, albumId, mp3, cover, id, copyrightId, mvId, mcCopyrightId }) => {
+        data = (result.musics || []).map(({ songName, singerId, singerName, albumName, albumId, mp3, cover, id, copyrightId, mvId, mcCopyrightId }) => {
           const singerIds = singerId.replace(/\s/g, '').split(',');
           const singerNames = singerName.replace(/\s/g, '').split(',');
           const artists: Validation.ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
