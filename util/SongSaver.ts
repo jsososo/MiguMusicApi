@@ -11,7 +11,6 @@ class SongSaver {
     jsonFile.readFile('data/songUrl.json')
       .then((res) => {
         this.data = res;
-        console.log('song saver init', Object.keys(res));
       }).catch(() => {
         this.data = {}
     });

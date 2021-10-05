@@ -46,24 +46,28 @@ const Router: RouterMap = {
   },
 
   async ['/find']({ query, res }) {
-    const { keyword, duration = 0 } = query;
+    const { keyword, duration = 0, noMatch = '' } = query;
     if (!keyword) {
       return {
         result: 500,
         errMsg: '搜啥呢？',
       }
     }
-    const search = searchRouter['/'];
+    const noMatchArr = noMatch.split(',');
+    const songRes = await searchRouter['/']({ query: { keyword }, res }).catch(() => ({}));
     // @ts-ignore
-    const songRes = (await search({ query: { keyword }, res }).catch(() => ({})))?.data;
+    const songList: SongInfo[] = songRes?.data?.list || [];
     let s: SongInfo;
-    if ((songRes.list || []).length) {
+    if (songList.length) {
       if (Number(duration)) {
-        const cids = songRes.list.splice(0, 5).map(({ cid }) => cid);
+        const cids = songList
+          .splice(0, noMatch.length + 5)
+          .filter(({ cid }) => !noMatchArr.includes(cid))
+          .map(({ cid }) => cid);
         const list = await getBatchSong(cids);
         s = list.find(({ duration: d }) => d <= (Number(duration) + 3) && d >= (duration - 3));
       } else {
-        s = songRes.list[0];
+        s = songList[0];
       }
     }
     s && s.cid && (s = await songSaver.query(s.cid, s));
