@@ -1,20 +1,22 @@
-module.exports = {
-  async ['/']({ res, req, request, getBatchSong, cheerio }) {
-    const { id } = req.query;
-    const playListRes = await request.send(`http://m.music.migu.cn/migu/remoting/query_playlist_by_id_tag?onLine=1&queryChannel=0&createUserId=migu&contentCountMin=5&playListId=${id}`);
+import RouteMap = Types.RouteMap;
+import request from "@request";
+import { getBatchSong } from "@util";
+import cheerio from 'cheerio';
 
-    let listInfo;
-    try {
-      listInfo = playListRes.rsp.playList[0];
-      if (!listInfo) {
-        throw { message: 'error' };
-      }
-    } catch (err) {
-      return res.send({
+const Router: RouteMap = {
+  async ['/']({ query }) {
+    const { id } = query;
+    const playListRes = await request(`http://m.music.migu.cn/migu/remoting/query_playlist_by_id_tag?onLine=1&queryChannel=0&createUserId=migu&contentCountMin=5&playListId=${id}`);
+
+    const listInfo = playListRes?.rsp?.playList[0];
+
+    if (!listInfo) {
+      return {
         result: 200,
-        errMsg: playListRes.info || err.message,
-      })
+        errMsg: playListRes.info || '服务异常',
+      }
     }
+
     const { playListName: name, createName, createUserId, playCount, contentCount, image: picUrl, summary: desc, createTime, updateTime, tagLists, playListType } = listInfo;
     const baseInfo = {
       name,
@@ -37,7 +39,7 @@ module.exports = {
 
     let pageNo = 1;
     while ((pageNo-1) * 20 < contentCount) {
-      const listPage = await request.send(`https://music.migu.cn/v3/music/playlist/${id}?page=${pageNo}`, {
+      const listPage = await request(`https://music.migu.cn/v3/music/playlist/${id}?page=${pageNo}`, {
         dataType: 'raw',
       })
 
@@ -51,12 +53,12 @@ module.exports = {
     // const { contentList = []} = await request.send(`http://m.music.migu.cn/migu/remoting/playlistcontents_query_tag?playListType=${playListType}&playListId=${id}&contentCount=${contentCount}`)
 
 
-    baseInfo.list = await getBatchSong(cids, request);
+    baseInfo.list = await getBatchSong(cids);
 
-    return res.send({
+    return {
       result: 100,
       data: baseInfo,
-    })
+    }
     // for (let i in res.contentList) {
     //   const { songId } = contentList[i];
     //   const s = await require('./song')['/']({ req: { query: { id: songId }}}, request).catch(() => null);
@@ -74,4 +76,6 @@ module.exports = {
     //   })
     // })
   },
-};
+}
+
+export default Router;

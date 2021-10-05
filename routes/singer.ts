@@ -1,18 +1,24 @@
-module.exports = {
-  async ['/desc']({ res, req, request, cheerio }) {
-    const { id } = req.query;
+import RouterMap = Types.RouteMap;
+import cheerio from 'cheerio';
+import request from "@request";
+import { getId } from "@util";
+
+
+const Router: RouterMap = {
+  async ['/desc']({ query }) {
+    const { id } = query;
     if (!id) {
-      return res.send({
+      return {
         result: 500,
         errMsg: 'id ?'
-      })
+      }
     }
-    const result = await request.send(`http://music.migu.cn/v3/music/artist/${id}`, { dataType: 'raw' });
+    const result = await request(`http://music.migu.cn/v3/music/artist/${id}`, { dataType: 'raw' });
     const $ = cheerio.load(result);
     const name = $('.artist-info .artist-name a').text();
     const picUrl = $('.artist-info .artist-avatar img').attr('src');
     const desc = $('#J_ArtistIntro .content').text();
-    res.send({
+    return {
       result: 100,
       data: {
         name,
@@ -20,18 +26,18 @@ module.exports = {
         id,
         desc,
       },
-    });
+    };
   },
-  async ['/songs']({ res, req, request, cheerio, getId }) {
-    const { id, pageno, pageNo } = req.query;
+  async ['/songs']({ query }) {
+    const { id, pageno, pageNo } = query;
     let page = pageNo || pageno || 1;
     if (!id) {
-      return res.send({
+      return {
         result: 500,
         errMsg: 'id ?'
-      })
+      };
     }
-    const result = await request.send(`http://music.migu.cn/v3/music/artist/${id}/song?page=${page}`, { dataType: 'raw' });
+    const result = await request(`http://music.migu.cn/v3/music/artist/${id}/song?page=${page}`, { dataType: 'raw' });
     const $ = cheerio.load(result);
     const list = [];
     $('.songlist-body .J_CopySong').each((i, o) => {
@@ -64,23 +70,23 @@ module.exports = {
       pageList.push(Number($page || 0));
     });
 
-    res.send({
+    return {
       result: 100,
       data: {
         list,
         totalPage: Math.max(...pageList),
       }
-    })
+    };
   },
-  async ['/albums']({ res, req, request, cheerio, getId }) {
-    const { id, pageNo = 1, pageno = pageNo } = req.query;
+  async ['/albums']({ query }) {
+    const { id, pageNo = 1, pageno = pageNo } = query;
     if (!id) {
-      return res.send({
+      return {
         result: 500,
         errMsg: 'id ?'
-      })
+      };
     }
-    const result = await request.send(`http://music.migu.cn/v3/music/artist/${id}/album?page=${pageno}`, { dataType: 'raw' });
+    const result = await request(`http://music.migu.cn/v3/music/artist/${id}/album?page=${pageno}`, { dataType: 'raw' });
     const $ = cheerio.load(result);
     const list = [];
     $('.artist-album-list li').each((i, o) => {
@@ -105,9 +111,11 @@ module.exports = {
       const $page = cheerio(p).text();
       pageList.push(Number($page || 0));
     });
-    res.send({
+    return {
       result: 100,
       data: { list, totalPage: Math.max(...pageList) },
-    })
+    };
   },
-};
+}
+
+export default Router;

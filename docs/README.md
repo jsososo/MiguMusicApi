@@ -10,6 +10,8 @@
 
 ## Start
 
+### Node 服务
+
 ```shell
 $ git clone git@github.com:jsososo/MiguMusicApi.git
 
@@ -22,7 +24,21 @@ $ npm start
 
 项目默认端口为 3400，可以在启动参数或 `bin/config.js` 中修改
 
-**在线接口测试网址：[http://api.migu.jsososo.com](http://api.migu.jsososo.com)**
+### Npm
+
+```shell script
+$ yarn add migu-music-api
+```
+
+```javascript
+const miguMusic = require('migu-music-api').default;
+// or
+// import miguMusic from 'migu-music-api';
+
+miguMusic.default('search', { keyword: '周杰伦' })
+  .then(res => console.log(res))
+  .catch((err) => console.error('error: ', err.message))
+```
 
 ## 用前须知
 
@@ -52,6 +68,8 @@ $ npm start
 - 获取歌词接口
 
 ## 更新记录
+21-10-05：🍠 重构，支持 npm
+
 21-06-27：🌽 修复搜索出错问题
 
 21-04-16：🥒 更新获取歌曲链接接口 

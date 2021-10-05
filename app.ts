@@ -1,18 +1,14 @@
-/// <reference path="./util/Validation.ts" />
-import createError = require('http-errors');
-import express = require('express');
-import path = require('path');
-import cookieParser = require('cookie-parser');
-import logger = require('morgan');
-import fs = require('fs');
-import cheerio = require("cheerio");
-import { request } from './util/request';
-import * as Util from './util/util';
-import SongSaver from './util/SongSaver';
+/// <reference path="./util/type.ts" />
+import createError from 'http-errors';
+import express from 'express';
+import path from 'path';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import fs from 'fs';
+import RouterMap = Types.RouteMap;
 
 const app = express();
 
-const songSaver = new SongSaver();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -25,44 +21,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 fs.readdirSync(path.join(__dirname, 'routes')).reverse().forEach(file => {
   const filename = file.replace(/(\.js|\.ts)$/, '');
-  app.use(`/${filename}`, (req, res, next) => {
-    const router = express.Router();
-    req.query = {
-      ...req.query,
-      ...req.body,
-    };
-    const RouterMap: Validation.RouterMap = require(`./routes/${filename}`);
-    Object.keys(RouterMap).forEach((path: string): void => {
-      let rObj = RouterMap[path];
-      if (typeof rObj === 'function') {
-        rObj = {
-          func: rObj,
-          post: true,
-          get: true,
+  const RouterMap: RouterMap = require(`./routes/${filename}`).default;
+  Object.keys(RouterMap).forEach((path: string): void => {
+    let fullPah = `/${filename}${path}`;
+    if (fullPah === '/index/') {
+      fullPah = '/';
+    }
+    app.use(fullPah, (req, res, next) => {
+      const router = express.Router();
+      req.query = {
+        ...req.query,
+        ...req.body,
+      };
+      let routeFunc = RouterMap[path];
+      const func = async (req, res) => {
+        const result = await routeFunc({
+          query: req.query,
+          res,
+        }).catch((err) => ({ result: 200, errMsg: `异常：${err.message}`}))
+        if (typeof result === 'object') {
+          res.send(result);
         }
-      }
-      const func = (req, res, next) => rObj.func({
-        req,
-        res,
-        next,
-        request: new request({ req, res, next }),
-        cheerio,
-        port: app.get('port'),
-        ...Util,
-        songSaver,
-      });
-      if (rObj.post) {
-        router.post(path, func);
-      }
-      if (rObj.get) {
-        router.get(path, func);
-      }
+      };
+      router.post('/', func);
+      router.get('/', func);
+      router(req, res, next);
     });
-    router(req, res, next);
   });
 });
-
-app.use('/', require('./routes/index'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

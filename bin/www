@@ -3,7 +3,7 @@
 /**
  * Module dependencies.
  */
-var app = require('../app');
+var app = require('../dist/app');
 var debug = require('debug')('migumusicapi:server');
 var http = require('http');
 var config = require('./config');
@@ -87,4 +87,5 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
   console.log('Listening on ' + bind);
+  console.log(`open: http://localhost:${addr.port}`)
 }

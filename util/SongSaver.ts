@@ -1,15 +1,17 @@
-import jsonFile = require('jsonfile');
-import {request} from './request';
-import CrypotJs = require('crypto-js');
-import JsEncrypt = require('node-jsencrypt');
-import SongInfo = Validation.SongInfo;
-import SongUrlMap = Validation.SongUrlMap;
+import jsonFile from 'jsonfile';
+import request from '@request';
+import CrypotJs from 'crypto-js';
+// @ts-ignore
+import JsEncrypt from 'node-jsencrypt';
+import SongInfo = Types.SongInfo;
+import SongUrlMap = Types.SongUrlMap;
 
-export default class SongSaver {
+class SongSaver {
   constructor() {
     jsonFile.readFile('data/songUrl.json')
       .then((res) => {
         this.data = res;
+        console.log('song saver init', Object.keys(res));
       }).catch(() => {
         this.data = {}
     });
@@ -31,15 +33,12 @@ export default class SongSaver {
     try {
       const info = this.get(cid);
       if (info) {
-        this.push(cid, {...info, ...data})
-        return {
-          ...info,
-          ...data,
-        };
+        const newInfo = {...info, ...data}
+        this.push(cid, newInfo)
+        return newInfo;
       }
-      const req = new request({});
 
-      const obj: Validation.SongInfo = data;
+      const obj: SongInfo = data;
 
 //       if (!obj.flac) {
 //         // 一套神秘的加密环节！
@@ -74,7 +73,7 @@ export default class SongSaver {
 //       }
 
       if (!obj.picUrl || !obj.url || !obj.picUrl) {
-        const sInfo = await req.send({
+        const sInfo = await request({
           url: `https://c.musicapp.migu.cn/MIGUM2.0/v1.0/content/resourceinfo.do?copyrightId=${cid}&resourceType=2`,
         })
         if (sInfo.resource && sInfo.resource[0]) {
@@ -96,7 +95,7 @@ export default class SongSaver {
           })
           obj.artists = data.artists;
 
-          data.lrcUrl && (obj.lyric = await req.send({ url: data.lrcUrl }, { dataType: 'raw' }))
+          data.lrcUrl && (obj.lyric = await request({ url: data.lrcUrl }, { dataType: 'raw' }))
         }
       }
 
@@ -113,3 +112,5 @@ export default class SongSaver {
     jsonFile.writeFile('data/songUrl.json', this.data).catch(() => {});
   }
 }
+
+export default new SongSaver();

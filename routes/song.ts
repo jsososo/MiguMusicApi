@@ -1,71 +1,78 @@
-module.exports = {
-  async ['/']({ req, res, songSaver, getBatchSong, request}) {
-    const { cid } = req.query;
+import RouterMap = Types.RouteMap;
+import SongInfo = Types.SongInfo;
+import searchRouter from './search';
+import { getBatchSong, songSaver } from "@util";
+
+const Router: RouterMap = {
+  async ['/']({ query }) {
+    const { cid } = query;
     if (!cid) {
-      return res.send({
+      return {
         result: 500,
-        errMsg: '有参数没传呀小老弟',
-      })
+        errMsg: 'cid ?',
+      }
     }
 
-    let song:Validation.SongInfo = (await getBatchSong([cid], request))[0];
+    let song: SongInfo = (await getBatchSong([cid]))[0];
     song = await songSaver.query(cid, song);
-    return res ? res.send(
-      {
-        result: 100,
-        data: song,
-      }
-    ) : song;
+    return {
+      result: 100,
+      data: song,
+    };
   },
 
-  async ['/url']({ req, res, songSaver }) {
-    const { cid, flac = '0' ,isRedirect = '0' } = req.query;
+  async ['/url']({ query, res }) {
+    const { cid, flac = '0' ,isRedirect = '0' } = query;
     if (!cid) {
-      return res.send({
+      return {
         result: 500,
-        errMsg: '有参数没传呀小老弟',
-      })
+        errMsg: 'cid ?',
+      }
     }
-    const info:Validation.SongInfo = await songSaver.query(cid);
+    const info: SongInfo = await songSaver.query(cid);
 
-    let url = info.url || '';
+    let url = info[128] || '';
     if (flac/1) {
       url = info.flac || url;
     }
     if (isRedirect/1) {
-      return res.redirect(url);
+      res.redirect(url)
+      return true;
     }
-    return res.send({
+    return {
       result: 100,
       data: url,
-    })
+    }
   },
 
-  async ['/find']({ req, res, request, songSaver, getBatchSong }) {
-    const { keyword, duration = 0 } = req.query;
+  async ['/find']({ query, res }) {
+    const { keyword, duration = 0 } = query;
     if (!keyword) {
-      return res.send({
+      return {
         result: 500,
         errMsg: '搜啥呢？',
-      })
+      }
     }
-    const search = require('./search')['/'];
-    const songRes = await search({ req: { query: { keyword }}, request }).catch(() => ({}));
-    let s:Validation.SongInfo;
+    const search = searchRouter['/'];
+    // @ts-ignore
+    const songRes = (await search({ query: { keyword }, res }).catch(() => ({})))?.data;
+    let s: SongInfo;
     if ((songRes.list || []).length) {
-      if (duration/1) {
+      if (Number(duration)) {
         const cids = songRes.list.splice(0, 5).map(({ cid }) => cid);
-        const list = await getBatchSong(cids, request);
-        s = list.find(({ duration: d }) => d <= (duration/1 + 3) && d >= (duration - 3));
+        const list = await getBatchSong(cids);
+        s = list.find(({ duration: d }) => d <= (Number(duration) + 3) && d >= (duration - 3));
       } else {
         s = songRes.list[0];
       }
     }
     s && s.cid && (s = await songSaver.query(s.cid, s));
 
-    return res ? res.send({
+    return {
       result: 100,
       data: s,
-    }) : s
+    }
   },
-};
+}
+
+export default Router;

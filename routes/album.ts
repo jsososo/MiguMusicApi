@@ -1,13 +1,21 @@
-module.exports = {
-  async ['/']({ res, req, request, cheerio, getId }) {
-    const { id } = req.query;
+import RouteMap = Types.RouteMap;
+import SongInfo = Types.SongInfo;
+import ArtistInfo = Types.ArtistInfo;
+import AlbumInfo = Types.AlbumInfo;
+import request from '@request';
+import cheerio from 'cheerio';
+import { getId } from '@util';
+
+const Router: RouteMap = {
+  async ['/']({ query }) {
+    const { id } = query;
     if (!id) {
-      return res.send({
-        result: 100,
-        errMsg: 'id ？'
-      })
+      return {
+        result: 500,
+        errMsg: 'id ?'
+      }
     }
-    const result = await request.send(`http://music.migu.cn/v3/music/album/${id}`, {
+    const result = await request(`http://music.migu.cn/v3/music/album/${id}`, {
       dataType: 'raw',
     });
 
@@ -17,8 +25,8 @@ module.exports = {
     const name = $('.content .title').text();
     const publishTime = $('.content .pub-date').text().replace(/[^\d|-]/g, '');
     const picUrl = $('.mad-album-info .thumb-img').attr('src');
-    const songList: Validation.SongInfo[] = [];
-    const artists: Validation.ArtistInfo[] = [];
+    const songList: SongInfo[] = [];
+    const artists: ArtistInfo[] = [];
     const company = $('.pub-company').text().replace(/^发行公司：/, '');
     $('.singer-name a').each((i, o) => {
       artists.push({
@@ -27,7 +35,7 @@ module.exports = {
       });
     });
     $('.songlist-body .J_CopySong').each((i, o) => {
-      const ar: Validation.ArtistInfo[] = [];
+      const ar: ArtistInfo[] = [];
       const $song = cheerio(o);
       $song.find('.song-singers a').each((i, o) => {
         ar.push({
@@ -47,7 +55,7 @@ module.exports = {
       })
     });
 
-    const data: Validation.AlbumInfo = {
+    const data: AlbumInfo = {
       name,
       id,
       artists,
@@ -58,22 +66,22 @@ module.exports = {
       songList,
     };
 
-    res.send({
+    return {
       result: 100,
       data,
-    });
+    };
   },
 
-  async ['/songs']({ res, req, request }) {
-    const { id } = req.query;
+  async ['/songs']({ query }) {
+    const { id } = query;
     if (!id) {
-      return res.send({
-        result: 100,
+      return {
+        result: 500,
         errMsg: 'id ？'
-      })
+      }
     }
-    const result = await request.send(`http://m.music.migu.cn/migu/remoting/cms_album_song_list_tag?albumId=${id}&pageSize=100`);
-    const data: Validation.SongInfo[] = result.result.results.map(({ picM, listenUrl, singerId, singerName, songId, songName, mvCopyrightId, copyrightId }) => ({
+    const result = await request(`http://m.music.migu.cn/migu/remoting/cms_album_song_list_tag?albumId=${id}&pageSize=100`);
+    const data: SongInfo[] = result.result.results.map(({ picM, listenUrl, singerId, singerName, songId, songName, mvCopyrightId, copyrightId }) => ({
       picUrl: picM,
       url: listenUrl,
       id: songId,
@@ -86,10 +94,11 @@ module.exports = {
       }))
     }));
 
-    return res.send({
+    return {
       result: 100,
       data,
-    })
-
+    }
   },
-};
+}
+
+export default Router;

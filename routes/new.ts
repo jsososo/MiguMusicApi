@@ -1,10 +1,14 @@
-module.exports = {
-  async ['/songs']({ req, res, request }) {
-    const { pageNo = 1, pageSize = 10 } = req.query;
-    const result = await request.send(`http://m.music.migu.cn/migu/remoting/cms_list_tag?pageSize=${pageSize}&nid=23853978&pageNo=${pageNo-1}`);
+import RouteMap = Types.RouteMap;
+import SongInfo = Types.SongInfo;
+import AlbumInfo = Types.AlbumInfo;
+import request from "@request";
 
-    // @ts-ignore
-    const list: Validation.SongInfo[] = result.result.results.map(({ songData }) => ({
+const Router: RouteMap = {
+  async ['/songs']({ query }) {
+    const { pageNo = 1, pageSize = 10 } = query;
+    const result = await request(`http://m.music.migu.cn/migu/remoting/cms_list_tag?pageSize=${pageSize}&nid=23853978&pageNo=${pageNo-1}`);
+
+    const list: SongInfo[] = result.result.results.map(({ songData }) => ({
       name: songData.songName,
       id: songData.songId,
       cid: songData.copyrightId,
@@ -16,20 +20,20 @@ module.exports = {
       url: songData.listenUrl,
     }));
 
-    res.send({
+    return {
       result: 100,
       data: {
         list,
         total: result.result.totalCount,
       }
-    })
+    }
   },
 
-  async ['/albums']({ req, res, request }) {
-    const { pageNo = 1, pageSize = 10 } = req.query;
-    const result = await request.send(`http://m.music.migu.cn/migu/remoting/cms_list_tag?pageSize=${pageSize}&nid=23854016&pageNo=${pageNo-1}&type=2003`);
+  async ['/albums']({ query }) {
+    const { pageNo = 1, pageSize = 10 } = query;
+    const result = await request(`http://m.music.migu.cn/migu/remoting/cms_list_tag?pageSize=${pageSize}&nid=23854016&pageNo=${pageNo-1}&type=2003`);
 
-    const list: Validation.AlbumInfo[] = result.result.results.map(({ albumData }) => {
+    const list: AlbumInfo[] = result.result.results.map(({ albumData }) => {
       const { albumsDes, singerId, albumId, albumName, albumsPicUrl } = albumData;
       const albumInfo = albumsDes.split('\n');
       return {
@@ -46,12 +50,14 @@ module.exports = {
         publishTime: albumInfo[5].split('：')[1],
       }
     });
-    res.send({
+    return {
       result: 100,
       data: {
         list,
         total: result.result.totalCount,
       }
-    })
+    }
   }
-};
+}
+
+export default Router;

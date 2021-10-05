@@ -1,12 +1,19 @@
-module.exports = {
-  async ['/']({ req, res, request }) {
-    const query = { ...req.query };
+import RouteMap = Types.RouteMap;
+import SongInfo = Types.SongInfo;
+import ArtistInfo = Types.ArtistInfo;
+import AlbumInfo = Types.AlbumInfo;
+import MvInfo = Types.MvInfo;
+import PlaylistInfo = Types.PlaylistInfo;
+import request from "@request";
+
+const Router: RouteMap = {
+  async ['/']({ query }) {
     query.type = query.type || 'song';
     if (!query.keyword) {
-      return res.send({
+      return {
         result: 500,
         errMsg: '搜啥呢？',
-      })
+      }
     }
 
     const { keyword, pageno = 1, pageNo = pageno, pageSize = 20 } = query;
@@ -19,7 +26,7 @@ module.exports = {
       lyric: 7,
     };
 
-    const result = await request.send({
+    const result = await request({
       url: 'https://m.music.migu.cn/migu/remoting/scr_search_tag',
       data: {
         keyword,
@@ -30,23 +37,23 @@ module.exports = {
     });
 
     if (!result) {
-      return res && res.send({
+      return {
         result: 100,
         data: {
           list: [],
           total: 0,
         },
-      })
+      }
     }
 
-    let data: Validation.SongInfo[] | Validation.ArtistInfo[] | Validation.AlbumInfo[] | Validation.MvInfo | Validation.PlaylistInfo[];
+    let data: SongInfo[] | ArtistInfo[] | AlbumInfo[] | MvInfo[] | PlaylistInfo[];
     switch (query.type) {
       case 'lyric':
       case 'song':
         data = (result.musics || []).map(({ songName, singerId, singerName, albumName, albumId, mp3, cover, id, copyrightId, mvId, mcCopyrightId }) => {
           const singerIds = singerId.replace(/\s/g, '').split(',');
           const singerNames = singerName.replace(/\s/g, '').split(',');
-          const artists: Validation.ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
+          const artists: ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
           return {
             name: songName,
             id,
@@ -100,7 +107,7 @@ module.exports = {
         data = result.mv.map(({ songName, id, mvCopyrightId, mvId, copyrightId, albumName, albumId, singerName, singerId }) => {
           const singerIds = singerId.replace(/\s/g, '').split(',');
           const singerNames = singerName.replace(/\s/g, '').split(',');
-          const artists: Validation.ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
+          const artists: ArtistInfo[] = singerIds.map((id, i) => ({ id, name: singerNames[i] }));
           return {
             name: songName,
             id,
@@ -117,18 +124,14 @@ module.exports = {
         break;
     }
 
-    if (!res) {
-      return {
-        list: data,
-        total: result.pgt,
-      }
-    }
-    res.send({
+    return {
       result: 100,
       data: {
         list: data,
         total: result.pgt,
       },
-    });
+    }
   },
-};
+}
+
+export default Router;

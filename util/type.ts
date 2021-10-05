@@ -1,15 +1,10 @@
-namespace Validation {
+namespace Types {
   // 路由对象，/routes 文件夹下的ts中
   export interface RouterObj {
     func: Function,
     method?: string,
 
     [propName: string]: any,
-  }
-
-  // 每个 /routes 文件夹里的对象
-  export interface RouterMap {
-    [propsName: string]: RouterObj,
   }
 
   // 歌曲 信息
@@ -26,6 +21,7 @@ namespace Validation {
     picUrl?: string,
     bigPicUrl?: string,
     flac?: string,
+    duration?: number,
   }
 
   // 艺人 信息
@@ -90,4 +86,37 @@ namespace Validation {
     'pic'? : string,
     'bgPic'? : string,
   }
+
+  type Rec = Record<string, any>
+
+  export type ResponseData = {
+    result: 200 | 500,
+    errMsg: string,
+  } | {
+    result: 100,
+    data: string | SongInfo | ArtistInfo | AlbumInfo | PlaylistInfo | MvInfo | {
+      list?: SongInfo[] | ArtistInfo[] | AlbumInfo[] | PlaylistInfo | MvInfo,
+      pageNo?: number,
+      total?: number,
+      totalPath?: number,
+    } | Rec
+  }
+
+  export type ReqType = {
+    query?: Rec
+    body?: Rec
+    header?: Rec
+    [key: string]: any
+  }
+  export type ResType = {
+    send?: (res: ResponseData) => any
+    redirect: (url: string) => any
+    [key: string]: any
+  }
+
+  export interface RouteFunc {
+    ({ query: Rec, res: ResType }): Promise<ResponseData | boolean>
+  }
+
+  export type RouteMap = Record<string, RouteFunc>
 }

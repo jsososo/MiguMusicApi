@@ -1,4 +1,5 @@
-import SongInfo = Validation.SongInfo;
+import SongInfo = Types.SongInfo;
+import request from "@request";
 
 export function getQueryFromUrl(key: string, search: string): any {
   try {
@@ -40,8 +41,8 @@ export function getId(url: string = '/'): string {
   return url.match(/\/([^\/]+)$/)[1];
 }
 
-export async function getBatchSong(cids: string[] = [], request): Promise<SongInfo[]> {
-  const songs = await request.send(`https://music.migu.cn/v3/api/music/audioPlayer/songs?type=1&copyrightId=${cids.join(',')}`).catch(() => ({ items: []}))
+export async function getBatchSong(cids: string[] = []): Promise<SongInfo[]> {
+  const songs = await request(`https://music.migu.cn/v3/api/music/audioPlayer/songs?type=1&copyrightId=${cids.join(',')}`).catch(() => ({ items: []}))
 
   return (songs.items || []).map(({ copyrightId, length = '00:00:00', songName, singers = [], albums = [], mvList = [], songId }) => ({
     id: songId,
