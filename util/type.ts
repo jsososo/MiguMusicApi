@@ -115,7 +115,7 @@ namespace Types {
   }
 
   export interface RouteFunc {
-    ({ query: Rec, res: ResType }): Promise<ResponseData | boolean>
+    (arg: { query: Rec, res: ResType }): Promise<ResponseData | boolean>
   }
 
   export type RouteMap = Record<string, RouteFunc>
